@@ -26,16 +26,15 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
       if (orderData) {
         setOrder(orderData);
 
-        // Ambil dari tabel 'profiles'
         if (orderData.customer_id) {
           const { data: customerProfile } = await supabase
             .from('profiles')
-            .select('phone, full_name')
+            .select('phone_number, full_name') // Mengambil phone_number
             .eq('id', orderData.customer_id)
             .single();
 
           if (customerProfile) {
-            setCustomerPhone(customerProfile.phone || '');
+            setCustomerPhone(customerProfile.phone_number || '');
             setOrder((prev: any) => ({ ...prev, customer_name: customerProfile.full_name }));
           }
         }

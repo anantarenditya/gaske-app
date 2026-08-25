@@ -14,7 +14,7 @@ export default function CustomerProfilePage() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State untuk mengontrol visibilitas password
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -29,7 +29,6 @@ export default function CustomerProfilePage() {
       setEmail(user.email || '');
       setNewEmail(user.email || '');
 
-      // Ambil data profil dari tabel profiles (tanpa balance)
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -38,7 +37,7 @@ export default function CustomerProfilePage() {
 
       if (profile) {
         setFullName(profile.full_name || '');
-        setPhone(profile.phone || '');
+        setPhone(profile.phone_number || ''); // Diperbarui ke phone_number
       }
       setLoading(false);
     }
@@ -53,12 +52,11 @@ export default function CustomerProfilePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 1. Update Nama & No HP di tabel profiles
     const { error: profileError } = await supabase
       .from('profiles')
       .update({
         full_name: fullName,
-        phone: phone,
+        phone_number: phone, // Diperbarui ke phone_number
       })
       .eq('id', user.id);
 
@@ -68,7 +66,6 @@ export default function CustomerProfilePage() {
       return;
     }
 
-    // 2. Jika Email diubah, update via Supabase Auth
     if (newEmail && newEmail !== email) {
       const { error: emailError } = await supabase.auth.updateUser({ email: newEmail });
       if (emailError) {
@@ -80,7 +77,6 @@ export default function CustomerProfilePage() {
       }
     }
 
-    // 3. Jika Password baru diisi, update via Supabase Auth
     if (newPassword) {
       if (newPassword.length < 6) {
         alert('Password baru minimal harus 6 karakter!');
@@ -96,7 +92,7 @@ export default function CustomerProfilePage() {
     }
 
     alert('Perubahan profil berhasil disimpan!');
-    setNewPassword(''); // Kosongkan form password setelah berhasil
+    setNewPassword('');
     setSaving(false);
   };
 
@@ -115,7 +111,6 @@ export default function CustomerProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100">
-      {/* Header */}
       <header className="bg-slate-800/90 backdrop-blur-xl border-b border-slate-700/60 sticky top-0 z-30 px-5 py-4 shadow-xl">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -131,7 +126,6 @@ export default function CustomerProfilePage() {
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-5 space-y-4">
-        {/* Kartu Informasi Akun (Tanpa Saldo) */}
         <div className="bg-gradient-to-br from-emerald-900/60 to-slate-800 p-6 rounded-3xl border border-emerald-500/20 shadow-xl space-y-1">
           <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
             <ShieldCheck className="w-4 h-4" /> Akun Terverifikasi
@@ -140,7 +134,6 @@ export default function CustomerProfilePage() {
           <p className="text-xs text-slate-400">{email}</p>
         </div>
 
-        {/* Form Edit Profil, Email, & Password */}
         <form onSubmit={handleUpdateProfile} className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-4">
           <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pb-1 border-b border-slate-700/60">
             Informasi Pribadi
@@ -193,8 +186,6 @@ export default function CustomerProfilePage() {
             <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-emerald-400" /> Password Baru (Opsional)
             </label>
-            
-            {/* Wadah input dengan tombol ikon mata di sebelah kanan */}
             <div className="relative flex items-center">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -222,7 +213,6 @@ export default function CustomerProfilePage() {
           </button>
         </form>
 
-        {/* Tombol Logout */}
         <button
           type="button"
           onClick={handleLogout}

@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation';
 export async function registerDriverAction(formData: FormData) {
   const supabase = await createClient();
 
-  // Ambil data sesuai dengan attribute 'name' di form frontend
   const fullName = formData.get('fullName') as string;
   const phoneNumber = formData.get('phoneNumber') as string;
   const email = formData.get('email') as string;
@@ -14,7 +13,6 @@ export async function registerDriverAction(formData: FormData) {
   const brandModel = formData.get('brandModel') as string;
   const plateNumber = formData.get('plateNumber') as string;
 
-  // 1. Daftarkan akun ke Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -33,11 +31,10 @@ export async function registerDriverAction(formData: FormData) {
   const userId = authData.user?.id;
 
   if (userId) {
-    // 2. Simpan detail tambahan ke tabel profiles
     const { error: profileError } = await supabase.from('profiles').upsert({
       id: userId,
       full_name: fullName,
-      phone: phoneNumber,
+      phone_number: phoneNumber, // Diperbarui dari phone ke phone_number
       role: 'driver',
       vehicle_type: brandModel,
       plate_number: plateNumber,
@@ -49,6 +46,5 @@ export async function registerDriverAction(formData: FormData) {
     }
   }
 
-  // Panggil redirect di luar try...catch agar berjalan sempurna di Next.js
   redirect('/driver/dashboard');
 }

@@ -17,7 +17,6 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
 
   useEffect(() => {
     async function fetchOrderDetails() {
-      // 1. Ambil data order berdasarkan ID
       const { data: orderData, error } = await supabase
         .from('orders')
         .select('*')
@@ -27,16 +26,15 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
       if (orderData) {
         setOrder(orderData);
 
-        // 2. Jika ada driver_id, ambil nomor HP driver dari tabel driver_profiles
         if (orderData.driver_id) {
           const { data: driverProfile } = await supabase
-            .from('driver_profiles')
-            .select('phone, full_name')
+            .from('profiles')
+            .select('phone_number, full_name') // Mengambil phone_number
             .eq('id', orderData.driver_id)
             .single();
 
           if (driverProfile) {
-            setDriverPhone(driverProfile.phone || '');
+            setDriverPhone(driverProfile.phone_number || '');
             setOrder((prev: any) => ({ ...prev, driver_name: driverProfile.full_name }));
           }
         }
@@ -47,7 +45,6 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
     fetchOrderDetails();
   }, [orderId]);
 
-  // Fungsi perapih nomor WA ke format 62...
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return '';
     let cleaned = phone.replace(/\D/g, '');
