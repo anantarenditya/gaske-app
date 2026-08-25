@@ -15,6 +15,7 @@ interface Order {
   destination_address: string;
   final_price: number;
   rating?: number;
+  driver_id?: string; // Ditambahkan untuk melacak driver yang mengambil order
 }
 
 export default function CustomerDashboard() {
@@ -22,6 +23,7 @@ export default function CustomerDashboard() {
   const supabase = createClient();
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [driverPhone, setDriverPhone] = useState<string>('6281234567890'); // State nomor HP driver asli
 
   // State untuk Popup Rating Universal (Ride, Send, Food, Mart)
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -57,12 +59,32 @@ export default function CustomerDashboard() {
           if (isMounted) {
             setActiveOrder(activeData as Order);
             setShowRatingModal(false);
+
+            // Jika order sudah diambil driver, ambil nomor HP asli dari tabel profiles
+            if (activeData.driver_id) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('phone')
+                .eq('id', activeData.driver_id)
+                .single();
+
+              if (profileData?.phone) {
+                let phoneNum = profileData.phone.trim();
+                // Format nomor otomatis ubah awalan 0 menjadi 62 agar kompatibel dengan wa.me
+                if (phoneNum.startsWith('0')) {
+                  phoneNum = '62' + phoneNum.slice(1);
+                }
+                setDriverPhone(phoneNum);
+              }
+            }
+
             setLoading(false);
           }
           return;
         }
 
         setActiveOrder(null);
+        setDriverPhone('6281234567890');
 
         // Jika tidak ada order aktif, cek apakah ada order COMPLETED yang belum diberi rating
         const { data: unratedData } = await supabase
@@ -195,11 +217,9 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* TOMBOL WALLET/TOP-UP TELAH DIHAPUS */}
             <Link href="/customer/history" title="Riwayat Pesanan" className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
               <History className="w-5 h-5" />
             </Link>
-            {/* TOMBOL MENU PROFIL */}
             <Link href="/customer/profile" title="Profil Saya" className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
               <User className="w-5 h-5" />
             </Link>
@@ -235,7 +255,7 @@ export default function CustomerDashboard() {
 
               {activeOrder.status !== 'SEARCHING_DRIVER' && (
                 <a
-                  href={`https://wa.me/6281234567890?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
+                  href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
