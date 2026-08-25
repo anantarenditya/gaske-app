@@ -15,7 +15,7 @@ interface Order {
   destination_address: string;
   final_price: number;
   rating?: number;
-  driver_id?: string; // Ditambahkan untuk melacak driver yang mengambil order
+  driver_id?: string;
 }
 
 export default function CustomerDashboard() {
@@ -23,9 +23,8 @@ export default function CustomerDashboard() {
   const supabase = createClient();
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [driverPhone, setDriverPhone] = useState<string>('6281234567890'); // State nomor HP driver asli
+  const [driverPhone, setDriverPhone] = useState<string>('6281234567890');
 
-  // State untuk Popup Rating Universal (Ride, Send, Food, Mart)
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
   const [completedServiceName, setCompletedServiceName] = useState('');
@@ -45,7 +44,6 @@ export default function CustomerDashboard() {
       }
 
       const loadData = async () => {
-        // Cek order aktif terlebih dahulu
         const { data: activeData } = await supabase
           .from('orders')
           .select('*')
@@ -60,7 +58,6 @@ export default function CustomerDashboard() {
             setActiveOrder(activeData as Order);
             setShowRatingModal(false);
 
-            // Jika order sudah diambil driver, ambil nomor HP asli dari tabel profiles
             if (activeData.driver_id) {
               const { data: profileData } = await supabase
                 .from('profiles')
@@ -70,7 +67,6 @@ export default function CustomerDashboard() {
 
               if (profileData?.phone) {
                 let phoneNum = profileData.phone.trim();
-                // Format nomor otomatis ubah awalan 0 menjadi 62 agar kompatibel dengan wa.me
                 if (phoneNum.startsWith('0')) {
                   phoneNum = '62' + phoneNum.slice(1);
                 }
@@ -86,7 +82,6 @@ export default function CustomerDashboard() {
         setActiveOrder(null);
         setDriverPhone('6281234567890');
 
-        // Jika tidak ada order aktif, cek apakah ada order COMPLETED yang belum diberi rating
         const { data: unratedData } = await supabase
           .from('orders')
           .select('*')
@@ -156,7 +151,6 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
-      {/* POPUP RATING UNIVERSAL (RIDE, SEND, FOOD, MART) */}
       {showRatingModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-5 animate-fade-in text-center">

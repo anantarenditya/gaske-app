@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
-import { playNotificationSound } from '@/lib/utils/sound'; // <-- Import helper audio notifikasi
-// Menambahkan 'User' di daftar import lucide-react
+import { playNotificationSound } from '@/lib/utils/sound'; 
 import { Power, CheckCircle2, MapPin, Navigation, BellRing, Loader2, UserCheck, RefreshCw, Navigation2, History, LogOut, MessageCircle, Wallet, ArrowUpRight, User } from 'lucide-react';
 
 interface Order {
@@ -18,6 +17,7 @@ interface Order {
   final_price: number;
   payment_method?: string;
   created_at: string;
+  customer_id?: string; // <-- Ditambahkan untuk melacak ID pemesan (customer)
 }
 
 export default function DriverDashboard() {
@@ -31,6 +31,7 @@ export default function DriverDashboard() {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
+  const [customerPhone, setCustomerPhone] = useState<string>('6281234567890'); // <-- State nomor HP customer asli
 
   useEffect(() => {
     let isMounted = true;
@@ -74,8 +75,28 @@ export default function DriverDashboard() {
         if (isMounted) {
           if (activeData) {
             setActiveOrder(activeData as Order);
+
+            // Jika ada order berjalan, ambil nomor HP asli customer dari tabel profiles
+            if (activeData.customer_id) {
+              const { data: custProfile } = await supabase
+                .from('profiles')
+                .select('phone')
+                .eq('id', activeData.customer_id)
+                .single();
+
+              if (custProfile?.phone) {
+                let phoneNum = custProfile.phone.trim();
+                // Ubah format awalan 0 menjadi 62 agar kompatibel dengan URL wa.me
+                if (phoneNum.startsWith('0')) {
+                  phoneNum = '62' + phoneNum.slice(1);
+                }
+                setCustomerPhone(phoneNum);
+              }
+            }
           } else {
             setActiveOrder(null);
+            setCustomerPhone('6281234567890'); // Reset default jika tidak ada order
+            
             if (isOnline) {
               const { data: searchData } = await supabase
                 .from('orders')
@@ -97,7 +118,7 @@ export default function DriverDashboard() {
 
     loadDriverState();
 
-    // 3. Supabase Realtime untuk Memunculkan Suara Otomatis Saat Ada Order Baru Masuk
+    // 3. Supabase Realtime untuk Notifikasi Suara Order Baru Masuk
     const channel = supabase
       .channel('driver_audio_notifications')
       .on(
@@ -105,7 +126,6 @@ export default function DriverDashboard() {
         { event: 'INSERT', schema: 'public', table: 'orders' },
         (payload) => {
           const newOrder = payload.new as Order;
-          // Jika order baru berstatus SEARCHING_DRIVER dan driver sedang online, bunyikan alarm/lonceng!
           if (newOrder.status === 'SEARCHING_DRIVER' && isOnline) {
             playNotificationSound();
           }
@@ -165,6 +185,7 @@ export default function DriverDashboard() {
     router.push('/login');
   };
 
+  // Fungsi WhatsApp menggunakan nomor HP asli Customer dari database
   const getWhatsAppLink = () => {
     if (!activeOrder) return '#';
     let text = '';
@@ -181,7 +202,7 @@ export default function DriverDashboard() {
       text = `Halo, saya Driver GASKE RIDE. Saya sedang meluncur ke lokasi jemput di *${activeOrder.pickup_address}*.`;
     }
     
-    return `https://wa.me/6285803004649?text=${encodeURIComponent(text)}`;
+    return `https://wa.me/${customerPhone}?text=${encodeURIComponent(text)}`;
   };
 
   return (
@@ -204,7 +225,6 @@ export default function DriverDashboard() {
               <History className="w-5 h-5" />
             </Link>
             
-            {/* INI TOMBOL PROFIL BARU UNTUK DRIVER */}
             <Link href="/driver/profile" title="Profil Saya" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
               <User className="w-5 h-5" />
             </Link>
@@ -221,7 +241,7 @@ export default function DriverDashboard() {
 
       <main className="max-w-md mx-auto px-4 -mt-8 space-y-4 relative z-20">
         
-        {/* WIDGET DOMPET / PENDAPATAN DRIVER */}
+        {/* WIDGET DOMPET */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/80 shadow-2xl space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -317,7 +337,6 @@ export default function DriverDashboard() {
                 </div>
               </div>
 
-              {/* INFORMASI METODE PEMBAYARAN DI SISI DRIVER */}
               <div className="flex justify-between items-center bg-slate-900/60 p-3 rounded-2xl border border-slate-700/40">
                 <span className="text-[11px] font-bold text-slate-400">Metode Pembayaran:</span>
                 <span className={`text-xs font-black px-2.5 py-1 rounded-xl ${
@@ -326,7 +345,6 @@ export default function DriverDashboard() {
                     : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                 }`}>
                   {activeOrder.payment_method || 'Tunai (Cash)'} 
-                  {activeOrder.payment_method && activeOrder.payment_method !== 'Tunai (Cash)' && ' (LUNAS / NON-TUNAI)'}
                 </span>
               </div>
             </div>
