@@ -52,8 +52,8 @@ export default function LandingPage() {
               Pesan Sekarang <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
             </button>
             
-            {/* JADI MITRA DRIVER -> DRIVER (/driver/register) */}
-            <button onClick={() => window.location.href = '/driver/register'} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition cursor-pointer">
+            {/* JADI MITRA DRIVER -> DRIVER (/driver/register) - DIPERBAIKI MENGGUNAKAN router.push */}
+            <button onClick={() => router.push('/driver/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition cursor-pointer">
               Jadi Mitra Driver
             </button>
           </div>
@@ -193,8 +193,8 @@ export default function LandingPage() {
               <p className="text-emerald-100 text-sm md:text-lg max-w-xl font-medium mb-8">
                 Gunakan motor Anda untuk mendapatkan penghasilan tambahan secara fleksibel. Jadilah bos untuk diri Anda sendiri.
               </p>
-              {/* TOMBOL BAWAH KHUSUS DRIVER -> /driver/register */}
-              <button onClick={() => window.location.href = '/driver/register'} className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black px-10 py-4 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-emerald-500/30 cursor-pointer">
+              {/* TOMBOL BAWAH KHUSUS DRIVER -> /driver/register - DIPERBAIKI MENGGUNAKAN router.push */}
+              <button onClick={() => router.push('/driver/register')} className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black px-10 py-4 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-emerald-500/30 cursor-pointer">
                 Daftar Jadi Mitra Sekarang
               </button>
             </div>
