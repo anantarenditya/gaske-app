@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Bike, Package, Utensils, ShoppingBag, ShieldCheck, Tag, Smartphone, Star, MapPin, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
@@ -52,11 +51,6 @@ export default function LandingPage() {
             <button onClick={() => router.push('/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-200 transition group cursor-pointer">
               Pesan Sekarang <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
             </button>
-            
-            {/* JADI MITRA DRIVER -> DRIVER (/driver/register) MENGGUNAKAN LINK */}
-            <Link href="/driver/register" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition cursor-pointer text-center">
-              Jadi Mitra Driver
-            </Link>
           </div>
         </section>
 
@@ -177,27 +171,6 @@ export default function LandingPage() {
                   <p className="text-sm text-slate-500 font-medium">{item.desc}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA MITRA DRIVER */}
-        <section className="py-16 px-4">
-          <div className="max-w-5xl mx-auto bg-emerald-900 rounded-[2.5rem] p-8 md:p-16 text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-              <div className="absolute w-96 h-96 bg-emerald-400 rounded-full blur-3xl -top-20 -left-20"></div>
-              <div className="absolute w-96 h-96 bg-teal-400 rounded-full blur-3xl -bottom-20 -right-20"></div>
-            </div>
-
-            <div className="relative z-10 flex flex-col items-center">
-              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">Jadi Mitra Driver</h2>
-              <p className="text-emerald-100 text-sm md:text-lg max-w-xl font-medium mb-8">
-                Gunakan motor Anda untuk mendapatkan penghasilan tambahan secara fleksibel. Jadilah bos untuk diri Anda sendiri.
-              </p>
-              {/* TOMBOL BAWAH KHUSUS DRIVER MENGGUNAKAN LINK */}
-              <Link href="/driver/register" className="inline-block bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black px-10 py-4 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-emerald-500/30 cursor-pointer text-center">
-                Daftar Jadi Mitra Sekarang
-              </Link>
             </div>
           </div>
         </section>
