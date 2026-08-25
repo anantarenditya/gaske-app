@@ -1,36 +1,75 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MessageCircle, MapPin, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { MessageCircle, MapPin, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function DriverOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const orderId = unwrappedParams.id;
 
-  // TODO: Nanti ganti dengan data asli dari Supabase
-  const mockOrderData = {
-    service: 'GASKE FOOD',
-    customer_name: 'Andi Pratama',
-    customer_phone: '085799998888', // Nomor dari customer
-    pickup_address: 'Warteg Bahari, Jl. Merdeka No 1',
-    dropoff_address: 'Kos Mahasiswa, Jl. Sudirman No 10',
-  };
+  const [order, setOrder] = useState<any>(null);
+  const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
-  // 1. Fungsi perapih nomor WA
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchOrderDetails() {
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      if (orderData) {
+        setOrder(orderData);
+
+        // Ambil dari tabel 'profiles'
+        if (orderData.customer_id) {
+          const { data: customerProfile } = await supabase
+            .from('profiles')
+            .select('phone, full_name')
+            .eq('id', orderData.customer_id)
+            .single();
+
+          if (customerProfile) {
+            setCustomerPhone(customerProfile.phone || '');
+            setOrder((prev: any) => ({ ...prev, customer_name: customerProfile.full_name }));
+          }
+        }
+      }
+      setLoading(false);
+    }
+
+    fetchOrderDetails();
+  }, [orderId]);
+
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return '';
-    let cleaned = phone.replace(/\D/g, ''); 
+    let cleaned = phone.replace(/\D/g, '');
     if (cleaned.startsWith('0')) {
-      cleaned = '62' + cleaned.substring(1); 
+      cleaned = '62' + cleaned.substring(1);
     }
     return cleaned;
   };
 
-  // 2. Terapkan fungsi ke nomor customer
-  const waNumber = formatWhatsAppNumber(mockOrderData.customer_phone);
-  const waText = `Halo Bapak/Ibu ${mockOrderData.customer_name}, saya Driver GASKE pesanan Anda. Saya segera meluncur ke lokasi!`;
-  const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return <div className="p-8 text-center text-white">Pesanan tidak ditemukan.</div>;
+  }
+
+  const waNumber = formatWhatsAppNumber(customerPhone);
+  const waText = `Halo ${order.customer_name || 'Customer'}, saya Driver GASKE untuk pesanan ${order.order_number}. Saya segera meluncur!`;
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : '#';
 
   return (
     <div className="min-h-screen bg-slate-900 p-4 md:p-8 font-sans">
@@ -42,8 +81,8 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
         <div className="bg-white p-6 rounded-3xl shadow-xl">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">{mockOrderData.service}</h2>
-              <p className="text-sm text-slate-500 font-medium">Order ID: #{orderId.substring(0,6)}</p>
+              <h2 className="text-2xl font-black text-slate-900">{order.service || 'GASKE RIDE'}</h2>
+              <p className="text-sm text-slate-500 font-medium">Resi: {order.order_number}</p>
             </div>
             <span className="bg-emerald-100 text-emerald-700 font-bold text-xs px-3 py-1 rounded-full">Aktif</span>
           </div>
@@ -52,28 +91,26 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
             <div className="flex gap-3">
               <MapPin className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs text-slate-500 font-bold uppercase">Ambil di (Pickup)</p>
-                <p className="text-sm font-medium text-slate-900">{mockOrderData.pickup_address}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 font-bold uppercase">Antar ke (Dropoff)</p>
-                <p className="text-sm font-medium text-slate-900">{mockOrderData.dropoff_address}</p>
+                <p className="text-xs text-slate-500 font-bold uppercase">Customer</p>
+                <p className="text-sm font-medium text-slate-900">{order.customer_name || 'Tanpa Nama'} ({customerPhone || 'Tidak ada nomor'})</p>
               </div>
             </div>
           </div>
 
-          {/* 3. Tombol WhatsApp ke Customer */}
-          <a
-            href={waLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
-          >
-            <MessageCircle className="w-5 h-5" /> Chat Customer 
-          </a>
+          {waNumber ? (
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
+            >
+              <MessageCircle className="w-5 h-5" /> Chat Customer via WhatsApp
+            </a>
+          ) : (
+            <button disabled className="w-full mb-3 bg-slate-200 text-slate-400 font-bold py-3.5 rounded-xl cursor-not-allowed">
+              Nomor Customer Tidak Tersedia
+            </button>
+          )}
 
           <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer">
             <CheckCircle className="w-5 h-5" /> Selesaikan Pesanan
