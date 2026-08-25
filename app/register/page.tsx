@@ -1,24 +1,69 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { registerDriverAction } from '@/app/actions/driver';
-import { ArrowRight, Loader2, User, Phone, Mail, Lock, Bike, FileText } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { User, Phone, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
-export default function DriverRegisterPage() {
+export default function CustomerRegisterPage() {
+  const router = useRouter();
+  const supabase = createClient();
+
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
 
-    const formData = new FormData(e.currentTarget);
-    const result = await registerDriverAction(formData);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone_number: phoneNumber,
+            role: 'customer',
+          },
+        },
+      });
 
-    if (result?.error) {
-      setErrorMessage(result.error);
+      if (authError) throw authError;
+
+      if (authData.user) {
+        const { error: profileError } = await supabase.from('profiles').insert({
+          id: authData.user.id,
+          role: 'customer',
+          full_name: fullName,
+          phone_number: phoneNumber,
+          email,
+        });
+
+        if (profileError) throw profileError;
+
+        const { error: customerError } = await supabase.from('customer_profiles').insert({
+          id: authData.user.id,
+        });
+
+        if (customerError) throw customerError;
+
+        router.push('/customer');
+        router.refresh();
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMessage(err.message || 'Gagal mendaftar. Silakan coba lagi.');
+      } else {
+        setErrorMessage('Terjadi kesalahan tidak terduga.');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -30,10 +75,10 @@ export default function DriverRegisterPage() {
           GASKE
         </Link>
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-          Daftar Mitra Driver
+          Daftar Akun Customer
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Isi data singkat & langsung siap bergabung jadi mitra pengemudi.
+          Nikmati layanan transportasi dan pengiriman lokal cepat.
         </p>
       </div>
 
@@ -45,67 +90,93 @@ export default function DriverRegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap</label>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Nama Lengkap
+              </label>
               <div className="relative">
                 <User className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                <input name="fullName" type="text" required placeholder="Budi Santoso" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Budi Santoso"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor HP / WhatsApp</label>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Nomor Handphone
+              </label>
               <div className="relative">
                 <Phone className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                <input name="phoneNumber" type="tel" required placeholder="081234567890" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input
+                  type="tel"
+                  required
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="081234567890"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Email
+              </label>
               <div className="relative">
                 <Mail className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                <input name="email" type="email" required placeholder="driver@gaske.id" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nama@email.com"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                <input name="password" type="password" required minLength={6} placeholder="••••••••" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Motor</label>
-                <div className="relative">
-                  <Bike className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                  <input name="brandModel" type="text" required placeholder="Honda Beat" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Plat Nomor</label>
-                <div className="relative">
-                  <FileText className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
-                  <input name="plateNumber" type="text" required placeholder="N 1234 AB" className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-                </div>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Gabung Mitra Sekarang <ArrowRight className="w-4 h-4" /></>}
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  Daftar Sekarang <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
           <div className="mt-6 text-center text-xs text-slate-500">
-            Sudah punya akun driver?{' '}
+            Sudah punya akun?{' '}
             <Link href="/login" className="font-bold text-emerald-600 hover:underline">
               Masuk di sini
             </Link>
