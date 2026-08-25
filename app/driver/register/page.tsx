@@ -81,6 +81,10 @@ export default function SimpleDriverRegisterPage() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Gabung Mitra Sekarang <ArrowRight className="w-4 h-4" /></>}
             </button>
           </form>
+
+          <div className="text-center mt-4 text-xs text-slate-500">
+            Sudah punya akun? <Link href="/login" className="text-emerald-600 font-bold hover:underline">Masuk di sini</Link>
+          </div>
         </div>
       </div>
     </div>
