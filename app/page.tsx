@@ -1,9 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, Bike, Package, Utensils, ShoppingBag, ShieldCheck, Tag, Smartphone, Star, MapPin, Search, CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bike, Package, Utensils, ShoppingBag, ShieldCheck, Tag, Smartphone, Star, MapPin, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-500 selection:text-white">
       
@@ -11,19 +13,19 @@ export default function LandingPage() {
       <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
               <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center">
                 <Bike className="w-5 h-5 text-white" />
               </div>
               <span className="font-black text-2xl tracking-tighter text-emerald-700">GASKE</span>
             </div>
             <div className="flex items-center gap-3 sm:gap-4">
-              <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-emerald-600 transition">
+              <button onClick={() => router.push('/login')} className="text-sm font-bold text-slate-600 hover:text-emerald-600 transition cursor-pointer">
                 Masuk
-              </Link>
-              <Link href="/register" className="text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full shadow-md shadow-emerald-200 transition">
+              </button>
+              <button onClick={() => router.push('/register')} className="text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full shadow-md shadow-emerald-200 transition cursor-pointer">
                 Daftar
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -42,18 +44,18 @@ export default function LandingPage() {
             Satu aplikasi untuk semua kebutuhan harian Anda. Transportasi cepat, pesan antar makanan, hingga belanja kebutuhan instan.
           </p>
           
-          {/* Tombol diarahkan ke Login */}
+          {/* Tombol Utama */}
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto px-4">
-            <Link href="/login" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-200 transition group">
+            <button onClick={() => router.push('/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-200 transition group cursor-pointer">
               Pesan Sekarang <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
-            </Link>
-            <Link href="/driver/register" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition">
+            </button>
+            <button onClick={() => router.push('/driver/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-slate-200 transition cursor-pointer">
               Jadi Mitra Driver
-            </Link>
+            </button>
           </div>
         </section>
 
-        {/* LAYANAN KAMI (SERVICES) - Semuanya diarahkan ke Login */}
+        {/* LAYANAN KAMI (SERVICES) */}
         <section className="py-16 md:py-24 bg-white px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
@@ -63,7 +65,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* RIDE */}
-              <Link href="/login" className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-100 transition duration-300">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Bike className="w-7 h-7" />
                 </div>
@@ -74,10 +76,10 @@ export default function LandingPage() {
                 <span className="text-sm font-bold text-emerald-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Pesan Ride <ArrowRight className="w-4 h-4" />
                 </span>
-              </Link>
+              </div>
 
               {/* SEND */}
-              <Link href="/login" className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-100 transition duration-300">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Package className="w-7 h-7" />
                 </div>
@@ -88,10 +90,10 @@ export default function LandingPage() {
                 <span className="text-sm font-bold text-rose-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Kirim Barang <ArrowRight className="w-4 h-4" />
                 </span>
-              </Link>
+              </div>
 
               {/* FOOD */}
-              <Link href="/login" className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-amber-500 hover:shadow-2xl hover:shadow-amber-100 transition duration-300">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-amber-500 hover:shadow-2xl hover:shadow-amber-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Utensils className="w-7 h-7" />
                 </div>
@@ -102,10 +104,10 @@ export default function LandingPage() {
                 <span className="text-sm font-bold text-amber-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Pesan Makanan <ArrowRight className="w-4 h-4" />
                 </span>
-              </Link>
+              </div>
 
               {/* MART */}
-              <Link href="/login" className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-100 transition duration-300">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <ShoppingBag className="w-7 h-7" />
                 </div>
@@ -116,7 +118,7 @@ export default function LandingPage() {
                 <span className="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Mulai Belanja <ArrowRight className="w-4 h-4" />
                 </span>
-              </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -177,7 +179,6 @@ export default function LandingPage() {
         {/* CTA MITRA DRIVER */}
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto bg-emerald-900 rounded-[2.5rem] p-8 md:p-16 text-center shadow-2xl relative overflow-hidden">
-            {/* Ornamen Latar Belakang */}
             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
               <div className="absolute w-96 h-96 bg-emerald-400 rounded-full blur-3xl -top-20 -left-20"></div>
               <div className="absolute w-96 h-96 bg-teal-400 rounded-full blur-3xl -bottom-20 -right-20"></div>
@@ -188,9 +189,9 @@ export default function LandingPage() {
               <p className="text-emerald-100 text-sm md:text-lg max-w-xl font-medium mb-8">
                 Gunakan motor Anda untuk mendapatkan penghasilan tambahan secara fleksibel. Jadilah bos untuk diri Anda sendiri.
               </p>
-              <Link href="/driver/register" className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black px-10 py-4 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-emerald-500/30">
+              <button onClick={() => router.push('/driver/register')} className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black px-10 py-4 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-emerald-500/30 cursor-pointer">
                 Daftar Jadi Mitra Sekarang
-              </Link>
+              </button>
             </div>
           </div>
         </section>
@@ -200,7 +201,7 @@ export default function LandingPage() {
       <footer className="bg-slate-950 text-slate-300 py-12 md:py-16 px-4 border-t border-slate-900">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
               <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center">
                 <Bike className="w-5 h-5 text-white" />
               </div>
@@ -214,19 +215,19 @@ export default function LandingPage() {
           <div>
             <h4 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Layanan</h4>
             <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><Link href="/login" className="hover:text-emerald-400 transition">GASKE RIDE</Link></li>
-              <li><Link href="/login" className="hover:text-emerald-400 transition">GASKE SEND</Link></li>
-              <li><Link href="/login" className="hover:text-emerald-400 transition">GASKE FOOD</Link></li>
-              <li><Link href="/login" className="hover:text-emerald-400 transition">GASKE MART</Link></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE RIDE</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE SEND</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE FOOD</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE MART</span></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Bantuan & Legal</h4>
             <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><Link href="#" className="hover:text-emerald-400 transition">Pusat Bantuan</Link></li>
-              <li><Link href="#" className="hover:text-emerald-400 transition">Syarat & Ketentuan</Link></li>
-              <li><Link href="#" className="hover:text-emerald-400 transition">Kebijakan Privasi</Link></li>
+              <li><span className="hover:text-emerald-400 transition cursor-pointer">Pusat Bantuan</span></li>
+              <li><span className="hover:text-emerald-400 transition cursor-pointer">Syarat & Ketentuan</span></li>
+              <li><span className="hover:text-emerald-400 transition cursor-pointer">Kebijakan Privasi</span></li>
             </ul>
           </div>
 
