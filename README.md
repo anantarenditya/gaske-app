@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛵📦 GASKE — Platform Transportasi & Pengiriman Lokal
 
-## Getting Started
+> **Tagline:** *"Mau ke mana? GASKE."*
 
-First, run the development server:
+GASKE adalah platform lokal yang menghubungkan pelanggan (*customer*) dengan mitra *driver* untuk dua layanan utama:
+- 🛵 **GASKE RIDE:** Layanan antar-jemput penumpang menggunakan sepeda motor.
+- 📦 **GASKE SEND:** Layanan pengiriman barang atau dokumen cepat.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui, Lucide React
+- **Backend & Database:** Supabase, PostgreSQL, Supabase Auth, Supabase Realtime, Supabase Storage
+- **Map & Geolocation:** Mapbox / Google Maps API (Abstraction Layer)
+- **Charts:** Recharts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📂 Struktur Directory
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+gaske/
+├── app/                  # Route Handlers & App Pages (Next.js App Router)
+│   ├── page.tsx          # Landing Page Utama
+│   ├── login/            # Authentication Login
+│   ├── register/         # Authentication Register Customer
+│   ├── customer/         # Dashboard Customer
+│   ├── driver/           # Dashboard Driver & Register Driver
+│   └── admin/            # Dashboard Admin
+├── components/           # Reusable UI & Business Components
+├── lib/                  # Business Logic & Integrations
+│   ├── supabase/         # Client & Server Supabase Config
+│   ├── pricing/          # Simulator & Calculator Tarif GASKE
+│   ├── maps/             # Abstraction Layer untuk Map
+│   └── utils/            # Helper & Formatting (Rupiah, Date)
+├── types/                # TypeScript Interfaces & Enums
+├── middleware.ts         # Role-Based Access Control & Route Protection
+├── supabase/             # Migration Files & Database Seed
+└── .env.local            # Environment Variables (Private)
