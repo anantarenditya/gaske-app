@@ -1,36 +1,77 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MessageCircle, MapPin, Bike, ArrowLeft } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { MessageCircle, Bike, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Mengambil ID pesanan dari URL (Next.js 15 / React 19 menggunakan use())
   const unwrappedParams = use(params);
   const orderId = unwrappedParams.id;
 
-  // TODO: Nanti ganti dengan data asli dari Supabase berdasarkan 'orderId'
-  const mockOrderData = {
-    status: 'Menuju Lokasi Penjemputan',
-    driver_name: 'Budi Santoso',
-    driver_phone: '0812-3456-7890', // Nomor asli yang belum rapi
-    plate_number: 'N 1234 AB',
-  };
+  const [order, setOrder] = useState<any>(null);
+  const [driverPhone, setDriverPhone] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
-  // 1. Fungsi perapih nomor WA
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchOrderDetails() {
+      // 1. Ambil data order berdasarkan ID
+      const { data: orderData, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      if (orderData) {
+        setOrder(orderData);
+
+        // 2. Jika ada driver_id, ambil nomor HP driver dari tabel driver_profiles
+        if (orderData.driver_id) {
+          const { data: driverProfile } = await supabase
+            .from('driver_profiles')
+            .select('phone, full_name')
+            .eq('id', orderData.driver_id)
+            .single();
+
+          if (driverProfile) {
+            setDriverPhone(driverProfile.phone || '');
+            setOrder((prev: any) => ({ ...prev, driver_name: driverProfile.full_name }));
+          }
+        }
+      }
+      setLoading(false);
+    }
+
+    fetchOrderDetails();
+  }, [orderId]);
+
+  // Fungsi perapih nomor WA ke format 62...
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return '';
-    let cleaned = phone.replace(/\D/g, ''); // Hapus selain angka
+    let cleaned = phone.replace(/\D/g, '');
     if (cleaned.startsWith('0')) {
-      cleaned = '62' + cleaned.substring(1); // Ubah awalan 0 jadi 62
+      cleaned = '62' + cleaned.substring(1);
     }
     return cleaned;
   };
 
-  // 2. Terapkan fungsi ke nomor driver
-  const waNumber = formatWhatsAppNumber(mockOrderData.driver_phone);
-  const waText = `Halo Bapak/Ibu ${mockOrderData.driver_name}, saya customer GASKE (Order ID: ${orderId}). Apakah sudah dekat?`;
-  const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return <div className="p-8 text-center">Pesanan tidak ditemukan.</div>;
+  }
+
+  const waNumber = formatWhatsAppNumber(driverPhone);
+  const waText = `Halo ${order.driver_name || 'Driver'}, saya customer GASKE (Order: ${order.order_number}). Apakah sudah dekat?`;
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : '#';
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
@@ -41,27 +82,32 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
 
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <h2 className="text-xl font-black text-slate-900 mb-1">Status Pesanan</h2>
-          <p className="text-sm font-medium text-emerald-600 mb-6">{mockOrderData.status}</p>
+          <p className="text-sm font-medium text-emerald-600 mb-6">Nomor Resi: {order.order_number}</p>
 
           <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl mb-6">
             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
               <Bike className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900">{mockOrderData.driver_name}</h4>
-              <p className="text-xs text-slate-500 font-medium">{mockOrderData.plate_number}</p>
+              <h4 className="font-bold text-slate-900">{order.driver_name || 'Mencari Driver...'}</h4>
+              <p className="text-xs text-slate-500 font-medium">{driverPhone ? driverPhone : 'Belum ada nomor driver'}</p>
             </div>
           </div>
 
-          {/* 3. Tombol WhatsApp yang sudah benar */}
-          <a
-            href={waLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
-          >
-            <MessageCircle className="w-5 h-5" /> Chat Driver via WhatsApp
-          </a>
+          {waNumber ? (
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
+            >
+              <MessageCircle className="w-5 h-5" /> Chat Driver via WhatsApp
+            </a>
+          ) : (
+            <button disabled className="w-full bg-slate-200 text-slate-400 font-bold py-3.5 rounded-xl cursor-not-allowed">
+              Driver Belum Menerima Pesanan
+            </button>
+          )}
         </div>
       </div>
     </div>
