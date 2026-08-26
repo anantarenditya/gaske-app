@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { MessageCircle, MapPin, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, MessageSquare, MapPin, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'; // Tambah MessageSquare
 
 export default function DriverOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -29,7 +29,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
         if (orderData.customer_id) {
           const { data: customerProfile } = await supabase
             .from('profiles')
-            .select('phone_number, full_name') // Mengambil phone_number
+            .select('phone_number, full_name')
             .eq('id', orderData.customer_id)
             .single();
 
@@ -96,20 +96,31 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {waNumber ? (
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full mb-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
+          <div className="space-y-3 mb-6">
+            {/* Tombol In-App Chat Baru */}
+            <Link
+              href={`/driver/chat/${orderId}`}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-md"
             >
-              <MessageCircle className="w-5 h-5" /> Chat Customer via WhatsApp
-            </a>
-          ) : (
-            <button disabled className="w-full mb-3 bg-slate-200 text-slate-400 font-bold py-3.5 rounded-xl cursor-not-allowed">
-              Nomor Customer Tidak Tersedia
-            </button>
-          )}
+              <MessageSquare className="w-5 h-5" /> Live Chat di Aplikasi
+            </Link>
+
+            {/* Tombol WhatsApp (Cadangan) */}
+            {waNumber ? (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
+              >
+                <MessageCircle className="w-5 h-5" /> Hubungi via WhatsApp
+              </a>
+            ) : (
+              <button disabled className="w-full bg-slate-200 text-slate-400 font-bold py-3.5 rounded-xl cursor-not-allowed">
+                WhatsApp Customer Tidak Tersedia
+              </button>
+            )}
+          </div>
 
           <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer">
             <CheckCircle className="w-5 h-5" /> Selesaikan Pesanan
