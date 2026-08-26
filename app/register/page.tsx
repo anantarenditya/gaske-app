@@ -23,6 +23,7 @@ export default function CustomerRegisterPage() {
     setErrorMessage(null);
 
     try {
+      // 1. Mendaftarkan user ke Supabase Auth (Trigger database akan otomatis mengisi tabel profiles)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -38,17 +39,8 @@ export default function CustomerRegisterPage() {
       if (authError) throw authError;
 
       if (authData.user) {
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: authData.user.id,
-          role: 'customer',
-          full_name: fullName,
-          phone_number: phoneNumber,
-          email,
-        });
-
-        if (profileError) throw profileError;
-
-        const { error: customerError } = await supabase.from('customer_profiles').insert({
+        // 2. Gunakan upsert untuk customer_profiles agar aman dari duplikasi jika dicoba ulang
+        const { error: customerError } = await supabase.from('customer_profiles').upsert({
           id: authData.user.id,
         });
 

@@ -19,6 +19,7 @@ export async function registerDriverAction(formData: FormData) {
     options: {
       data: {
         full_name: fullName,
+        phone_number: phoneNumber, // <-- DITAMBAHKAN AGAR MASUK KE TRIGGER DATABASE
         role: 'driver',
       },
     },
@@ -34,7 +35,7 @@ export async function registerDriverAction(formData: FormData) {
     const { error: profileError } = await supabase.from('profiles').upsert({
       id: userId,
       full_name: fullName,
-      phone_number: phoneNumber, // Diperbarui dari phone ke phone_number
+      phone_number: phoneNumber,
       role: 'driver',
       vehicle_type: brandModel,
       plate_number: plateNumber,
