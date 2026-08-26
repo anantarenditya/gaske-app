@@ -237,10 +237,19 @@ export default function SendPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // 1. AMBIL NOMOR HP DARI PROFIL TERLEBIH DAHULU
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('phone_number')
+      .eq('id', user.id)
+      .maybeSingle();
+
     const detailPenerima = `Penerima: ${receiverName} (${receiverPhone}) | Barang: ${itemDetail}`;
     
+    // 2. SIMPAN NOMOR HP LANGSUNG KE TABEL ORDERS
     const { error } = await supabase.from('orders').insert({
       customer_id: user.id, 
+      customer_phone: userProfile?.phone_number || '', // <-- INI YANG MENYELESAIKAN MASALAH WA
       service: 'SEND', 
       status: 'SEARCHING_DRIVER',
       pickup_address: pickup, 

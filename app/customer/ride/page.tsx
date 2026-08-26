@@ -45,27 +45,22 @@ export default function RidePage() {
     let perKmPrice = 2000;
 
     if (currentHour >= 5 && currentHour < 17) {
-      // Jam 05.00 - 17.00
       basePrice = 7000;
       perKmPrice = 2000;
     } else if (currentHour >= 17 && currentHour < 21) {
-      // Jam 17.00 - 21.00
       basePrice = 8000;
       perKmPrice = 2500;
     } else {
-      // Jam 21.00 - 05.00
       basePrice = 10000;
       perKmPrice = 3000;
     }
 
-    // 4 KM pertama ikut harga dasar, sisanya dikalikan harga per KM
     if (distKm <= 4) {
       return basePrice;
     } else {
       return basePrice + ((distKm - 4) * perKmPrice);
     }
   };
-  // -------------------------------------------------------------
 
   const calculateDistance = (p1: LatLng, p2: LatLng) => {
     const R = 6371;
@@ -106,7 +101,7 @@ export default function RidePage() {
 
           const dist = calculateDistance(coords, destCoords);
           setDistanceKm(dist);
-          setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+          setPrice(calculateDynamicPrice(dist));
         },
         (error) => {
           console.warn("GPS Otomatis Gagal:", error.message);
@@ -133,7 +128,7 @@ export default function RidePage() {
 
           const dist = calculateDistance(coords, destCoords);
           setDistanceKm(dist);
-          setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+          setPrice(calculateDynamicPrice(dist));
         },
         (error) => {
           alert(`Gagal mengambil lokasi: ${error.message}. Pastikan izin lokasi diizinkan di browser.`);
@@ -179,13 +174,13 @@ export default function RidePage() {
       setPickupCoords(newTarget);
       setPickupAddress(shortName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     } else {
       const dist = calculateDistance(pickupCoords, newTarget);
       setDestCoords(newTarget);
       setDestinationAddress(shortName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     }
     setSearchQuery('');
     setSearchResults([]);
@@ -200,13 +195,13 @@ export default function RidePage() {
       setPickupCoords(newCoords);
       setPickupAddress(addressName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     } else {
       const dist = calculateDistance(pickupCoords, newCoords);
       setDestCoords(newCoords);
       setDestinationAddress(addressName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     }
   };
 
@@ -215,8 +210,17 @@ export default function RidePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // 1. AMBIL NOMOR HP DARI PROFIL TERLEBIH DAHULU
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('phone_number')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    // 2. SIMPAN NOMOR HP LANGSUNG KE TABEL ORDERS
     const { error } = await supabase.from('orders').insert({
       customer_id: user.id,
+      customer_phone: userProfile?.phone_number || '', // <-- INI YANG MENYELESAIKAN MASALAH WA
       service: 'RIDE',
       status: 'SEARCHING_DRIVER',
       pickup_address: pickupAddress,

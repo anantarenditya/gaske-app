@@ -18,6 +18,7 @@ interface Order {
   payment_method?: string;
   created_at: string;
   customer_id?: string;
+  customer_phone?: string;
 }
 
 export default function DriverDashboard() {
@@ -31,7 +32,7 @@ export default function DriverDashboard() {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
-  const [customerPhone, setCustomerPhone] = useState<string>(''); // Dikosongkan, murni dari database
+  const [customerPhone, setCustomerPhone] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
@@ -76,23 +77,17 @@ export default function DriverDashboard() {
           if (activeData) {
             setActiveOrder(activeData as Order);
 
-            // Ambil nomor HP asli kustomer berdasarkan customer_id dari tabel profiles
-            if (activeData.customer_id) {
-              const { data: custProfile } = await supabase
-                .from('profiles')
-                .select('phone_number')
-                .eq('id', activeData.customer_id)
-                .maybeSingle(); // <-- DIUBAH MENJADI MAYBESINGLE AGAR LEBIH AMAN
-
-              if (custProfile && custProfile.phone_number) {
-                let phoneNum = custProfile.phone_number.trim();
-                if (phoneNum.startsWith('0')) {
-                  phoneNum = '62' + phoneNum.slice(1);
-                }
-                setCustomerPhone(phoneNum);
-              } else {
-                setCustomerPhone('');
+            // Ambil nomor HP kustomer dengan aman menggunakan maybeSingle()
+            // Langsung ambil nomor HP dari data order itu sendiri
+            if (activeData.customer_phone) {
+              let phoneNum = activeData.customer_phone.trim();
+              if (phoneNum.startsWith('0')) {
+                phoneNum = '62' + phoneNum.slice(1);
               }
+              setCustomerPhone(phoneNum);
+            } else {
+              setCustomerPhone('');
+            }
             } else {
               setCustomerPhone('');
             }
