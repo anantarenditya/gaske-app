@@ -13,7 +13,7 @@ export async function registerDriverAction(formData: FormData) {
   const brandModel = formData.get('brandModel') as string;
   const plateNumber = formData.get('plateNumber') as string;
 
-  // KIRIM SEMUA DATA KE OPTIONS.DATA AGAR TERBACA OLEH TRIGGER DATABASE
+  // 1. Daftarkan akun ke Auth Supabase
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -35,7 +35,8 @@ export async function registerDriverAction(formData: FormData) {
   const userId = authData.user?.id;
 
   if (userId) {
-    const { error: profileError } = await supabase.from('profiles').upsert({
+    // 2. Simpan ke tabel profiles
+    await supabase.from('profiles').upsert({
       id: userId,
       full_name: fullName,
       phone_number: phoneNumber,
@@ -45,8 +46,15 @@ export async function registerDriverAction(formData: FormData) {
       updated_at: new Date().toISOString(),
     });
 
-    if (profileError) {
-      return { error: profileError.message };
+    // 3. Simpan juga ke tabel driver_profiles (Agar dashboard driver mendeteksinya)
+    const { error: driverProfileError } = await supabase.from('driver_profiles').upsert({
+      id: userId,
+      vehicle_type: brandModel,
+      plate_number: plateNumber,
+    });
+
+    if (driverProfileError) {
+      return { error: driverProfileError.message };
     }
   }
 
