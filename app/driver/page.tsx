@@ -77,7 +77,6 @@ export default function DriverDashboard() {
           if (activeData) {
             setActiveOrder(activeData as Order);
 
-            // Ambil nomor HP kustomer dengan aman menggunakan maybeSingle()
             // Langsung ambil nomor HP dari data order itu sendiri
             if (activeData.customer_phone) {
               let phoneNum = activeData.customer_phone.trim();
@@ -85,9 +84,6 @@ export default function DriverDashboard() {
                 phoneNum = '62' + phoneNum.slice(1);
               }
               setCustomerPhone(phoneNum);
-            } else {
-              setCustomerPhone('');
-            }
             } else {
               setCustomerPhone('');
             }
@@ -356,7 +352,7 @@ export default function DriverDashboard() {
               </a>
             ) : (
               <div className="w-full py-3 bg-slate-800 text-slate-400 border border-slate-700 rounded-2xl text-center text-xs font-bold">
-                Nomor HP Pelanggan Belum Terdaftar di Profil
+                Nomor HP Pelanggan Belum Terdaftar
               </div>
             )}
 
