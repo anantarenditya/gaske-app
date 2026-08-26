@@ -37,7 +37,7 @@ export default function CustomerProfilePage() {
 
       if (profile) {
         setFullName(profile.full_name || '');
-        setPhone(profile.phone_number || ''); // Diperbarui ke phone_number
+        setPhone(profile.phone_number || ''); 
       }
       setLoading(false);
     }
@@ -52,13 +52,15 @@ export default function CustomerProfilePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // MENGGUNAKAN UPSERT: Aman jika baris profil belum ada di database
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: user.id,
         full_name: fullName,
-        phone_number: phone, // Diperbarui ke phone_number
-      })
-      .eq('id', user.id);
+        phone_number: phone,
+        updated_at: new Date().toISOString(),
+      });
 
     if (profileError) {
       alert('Gagal memperbarui profil: ' + profileError.message);

@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { MessageCircle, MessageSquare, MapPin, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'; // Tambah MessageSquare
+import { MessageCircle, MessageSquare, MapPin, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function DriverOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -67,7 +67,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
   }
 
   const waNumber = formatWhatsAppNumber(customerPhone);
-  const waText = `Halo ${order.customer_name || 'Customer'}, saya Driver GASKE untuk pesanan ${order.order_number}. Saya segera meluncur!`;
+  const waText = `Halo ${order.customer_name || 'Customer'}, saya Driver GASKE untuk pesanan ${order.order_number}. Segera meluncur!`;
   const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : '#';
 
   return (
@@ -91,13 +91,14 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               <MapPin className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs text-slate-500 font-bold uppercase">Customer</p>
-                <p className="text-sm font-medium text-slate-900">{order.customer_name || 'Tanpa Nama'} ({customerPhone || 'Tidak ada nomor'})</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {order.customer_name || 'Customer'} ({customerPhone || 'Nomor tidak tersedia'})
+                </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-3 mb-6">
-            {/* Tombol In-App Chat Baru */}
             <Link
               href={`/driver/chat/${orderId}`}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-md"
@@ -105,7 +106,6 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               <MessageSquare className="w-5 h-5" /> Live Chat di Aplikasi
             </Link>
 
-            {/* Tombol WhatsApp (Cadangan) */}
             {waNumber ? (
               <a
                 href={waLink}

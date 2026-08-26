@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2 } from 'lucide-react'; // Tambah MessageSquare
+import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -87,12 +87,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             </div>
             <div>
               <h4 className="font-bold text-slate-900">{order.driver_name || 'Mencari Driver...'}</h4>
-              <p className="text-xs text-slate-500 font-medium">{driverPhone ? driverPhone : 'Belum ada nomor driver'}</p>
+              {/* DIPERBAIKI: Menampilkan nomor telepon dengan bersih atau status kosong */}
+              <p className="text-xs text-slate-500 font-medium">
+                {driverPhone ? driverPhone : 'Belum ada nomor telepon driver'}
+              </p>
             </div>
           </div>
 
           <div className="space-y-3">
-            {/* Tombol In-App Chat Baru */}
             <Link
               href={`/customer/chat/${orderId}`}
               className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-md"
@@ -100,7 +102,6 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
               <MessageSquare className="w-5 h-5" /> Live Chat di Aplikasi
             </Link>
 
-            {/* Tombol WhatsApp (Tetap ada sebagai cadangan) */}
             {waNumber ? (
               <a
                 href={waLink}

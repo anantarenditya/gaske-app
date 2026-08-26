@@ -3,22 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft, User, Phone, Mail, Lock, Save, Loader2, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, Lock, LogOut, Save, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
-export default function DriverProfilePage() {
+export default function CustomerProfilePage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [email, setEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State untuk toggle lihat password
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadProfile() {
+    async function fetchUserData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/login');
@@ -26,65 +27,65 @@ export default function DriverProfilePage() {
       }
 
       setEmail(user.email || '');
+      setNewEmail(user.email || '');
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, phone')
+        .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profile) {
         setFullName(profile.full_name || '');
-        setPhone(profile.phone || '');
+        setPhone(profile.phone_number || ''); 
       }
       setLoading(false);
     }
-    loadProfile();
+
+    fetchUserData();
   }, [supabase, router]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 1. Simpan pembaruan nama & telepon ke tabel profiles
+    // MENGGUNAKAN UPSERT: Aman jika baris profil belum ada di database
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: user.id,
         full_name: fullName,
-        phone: phone,
-      })
-      .eq('id', user.id);
+        phone_number: phone,
+        updated_at: new Date().toISOString(),
+      });
 
     if (profileError) {
-      alert('Gagal menyimpan profil: ' + profileError.message);
+      alert('Gagal memperbarui profil: ' + profileError.message);
       setSaving(false);
       return;
     }
 
-    // 2. Ubah email jika ada perubahan
-    if (email !== user.email) {
-      const { error: emailError } = await supabase.auth.updateUser({
-        email: email
-      });
-
+    if (newEmail && newEmail !== email) {
+      const { error: emailError } = await supabase.auth.updateUser({ email: newEmail });
       if (emailError) {
         alert('Gagal mengubah email: ' + emailError.message);
         setSaving(false);
         return;
       } else {
-        alert('Email berhasil diubah. Periksa kotak masuk email baru Anda untuk verifikasi jika diperlukan.');
+        alert('Email berhasil diubah. Silakan cek email baru Anda untuk verifikasi.');
       }
     }
 
-    // 3. Ubah password jika form password diisi
-    if (password.trim() !== '') {
-      const { error: passwordError } = await supabase.auth.updateUser({
-        password: password
-      });
-
+    if (newPassword) {
+      if (newPassword.length < 6) {
+        alert('Password baru minimal harus 6 karakter!');
+        setSaving(false);
+        return;
+      }
+      const { error: passwordError } = await supabase.auth.updateUser({ password: newPassword });
       if (passwordError) {
         alert('Gagal mengubah password: ' + passwordError.message);
         setSaving(false);
@@ -92,15 +93,20 @@ export default function DriverProfilePage() {
       }
     }
 
-    alert('Profil berhasil diperbarui!');
-    setPassword(''); // Kosongkan password setelah berhasil
+    alert('Perubahan profil berhasil disimpan!');
+    setNewPassword('');
     setSaving(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-emerald-400 gap-2 font-sans">
+        <Loader2 className="w-6 h-6 animate-spin" /> Memuat Profil...
       </div>
     );
   }
@@ -108,101 +114,114 @@ export default function DriverProfilePage() {
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100">
       <header className="bg-slate-800/90 backdrop-blur-xl border-b border-slate-700/60 sticky top-0 z-30 px-5 py-4 shadow-xl">
-        <div className="max-w-md mx-auto flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl transition">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-base font-black text-white tracking-tight">Profil Saya</h1>
-            <p className="text-[10px] text-emerald-400 font-semibold mt-0.5">Kelola informasi akun & keamanan</p>
+        <div className="max-w-md mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.back()} className="p-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl transition">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-sm font-black text-white tracking-tight leading-none">Profil Saya</h1>
+              <p className="text-[10px] text-emerald-400 font-semibold mt-1">Kelola informasi akun & keamanan</p>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 pt-6">
-        <form onSubmit={handleSave} className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-6">
-          
-          <div className="space-y-4">
-            <h2 className="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-700 pb-2">Informasi Pribadi</h2>
-            
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <User className="w-4 h-4 text-emerald-400" /> Nama Lengkap
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Masukkan nama lengkap"
-                required
-                className="w-full p-3 bg-slate-900 rounded-xl text-sm text-white border border-slate-700 focus:outline-none focus:border-emerald-500 transition"
-              />
-            </div>
+      <main className="max-w-md mx-auto px-4 pt-5 space-y-4">
+        <div className="bg-gradient-to-br from-emerald-900/60 to-slate-800 p-6 rounded-3xl border border-emerald-500/20 shadow-xl space-y-1">
+          <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
+            <ShieldCheck className="w-4 h-4" /> Akun Terverifikasi
+          </div>
+          <h2 className="text-lg font-black text-white">{fullName || 'Pengguna GASKE'}</h2>
+          <p className="text-xs text-slate-400">{email}</p>
+        </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-emerald-400" /> Nomor Telepon / WhatsApp
-              </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Contoh: 08123456789"
-                required
-                className="w-full p-3 bg-slate-900 rounded-xl text-sm text-white border border-slate-700 focus:outline-none focus:border-emerald-500 transition"
-              />
-            </div>
+        <form onSubmit={handleUpdateProfile} className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-4">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pb-1 border-b border-slate-700/60">
+            Informasi Pribadi
+          </h3>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-400" /> Alamat Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Masukkan email baru"
-                required
-                className="w-full p-3 bg-slate-900 rounded-xl text-sm text-white border border-slate-700 focus:outline-none focus:border-emerald-500 transition"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-emerald-400" /> Nama Lengkap
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Masukkan nama lengkap"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+            />
           </div>
 
-          <div className="space-y-4 pt-2">
-            <h2 className="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-700 pb-2">Keamanan Akun</h2>
-            
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-400" /> Password Baru (Opsional)
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Kosongkan jika tidak ingin mengubah password"
-                  className="w-full p-3 pr-10 bg-slate-900 rounded-xl text-sm text-white border border-slate-700 focus:outline-none focus:border-emerald-500 transition"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-slate-400 hover:text-white transition"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Nomor Telepon / WhatsApp
+            </label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Contoh: 08123456789"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-emerald-400" /> Alamat Email
+            </label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Masukkan email baru"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+            />
+          </div>
+
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pt-2 pb-1 border-b border-slate-700/60">
+            Keamanan Akun
+          </h3>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-emerald-400" /> Password Baru (Opsional)
+            </label>
+            <div className="relative flex items-center">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Kosongkan jika tidak ingin mengubah password"
+                className="w-full p-3.5 pr-11 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 text-slate-400 hover:text-emerald-400 transition"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-3.5 mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm"
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 transition mt-4"
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Simpan Perubahan</>}
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan Perubahan
           </button>
-
         </form>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full py-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-black rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 transition"
+        >
+          <LogOut className="w-4 h-4" /> Keluar Akun (Logout)
+        </button>
       </main>
     </div>
   );

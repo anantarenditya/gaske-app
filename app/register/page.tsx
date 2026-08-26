@@ -119,7 +119,7 @@ export default function CustomerRegisterPage() {
                   required
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="081234567890"
+                  placeholder="08xxxxxxxxxx"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
                 />
               </div>
