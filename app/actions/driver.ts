@@ -13,14 +13,17 @@ export async function registerDriverAction(formData: FormData) {
   const brandModel = formData.get('brandModel') as string;
   const plateNumber = formData.get('plateNumber') as string;
 
+  // KIRIM SEMUA DATA KE OPTIONS.DATA AGAR TERBACA OLEH TRIGGER DATABASE
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         full_name: fullName,
-        phone_number: phoneNumber, // <-- DITAMBAHKAN AGAR MASUK KE TRIGGER DATABASE
+        phone_number: phoneNumber,
         role: 'driver',
+        vehicle_type: brandModel,
+        plate_number: plateNumber,
       },
     },
   });
