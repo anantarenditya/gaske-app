@@ -17,7 +17,7 @@ interface Order {
   final_price: number;
   payment_method?: string;
   created_at: string;
-  customer_id?: string; // <-- Ditambahkan untuk melacak ID pemesan (customer)
+  customer_id?: string;
 }
 
 export default function DriverDashboard() {
@@ -31,7 +31,7 @@ export default function DriverDashboard() {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
-  const [customerPhone, setCustomerPhone] = useState<string>('6281234567890'); // <-- State nomor HP customer asli
+  const [customerPhone, setCustomerPhone] = useState<string>(''); // Dikosongkan, murni dari database
 
   useEffect(() => {
     let isMounted = true;
@@ -53,7 +53,7 @@ export default function DriverDashboard() {
           .in('status', ['ACCEPTED', 'DRIVER_ARRIVED', 'IN_TRIP'])
           .maybeSingle();
 
-        // 2. Ambil Statistik Pendapatan Selesai (Wallet Calculation)
+        // 2. Ambil Statistik Pendapatan Selesai
         const { data: completedData } = await supabase
           .from('orders')
           .select('final_price, created_at')
@@ -76,26 +76,29 @@ export default function DriverDashboard() {
           if (activeData) {
             setActiveOrder(activeData as Order);
 
-            // Jika ada order berjalan, ambil nomor HP asli customer dari tabel profiles
+            // Ambil nomor HP asli kustomer berdasarkan customer_id dari tabel profiles
             if (activeData.customer_id) {
               const { data: custProfile } = await supabase
                 .from('profiles')
-                .select('phone')
+                .select('phone_number')
                 .eq('id', activeData.customer_id)
-                .single();
+                .maybeSingle(); // <-- DIUBAH MENJADI MAYBESINGLE AGAR LEBIH AMAN
 
-              if (custProfile?.phone) {
-                let phoneNum = custProfile.phone.trim();
-                // Ubah format awalan 0 menjadi 62 agar kompatibel dengan URL wa.me
+              if (custProfile && custProfile.phone_number) {
+                let phoneNum = custProfile.phone_number.trim();
                 if (phoneNum.startsWith('0')) {
                   phoneNum = '62' + phoneNum.slice(1);
                 }
                 setCustomerPhone(phoneNum);
+              } else {
+                setCustomerPhone('');
               }
+            } else {
+              setCustomerPhone('');
             }
           } else {
             setActiveOrder(null);
-            setCustomerPhone('6281234567890'); // Reset default jika tidak ada order
+            setCustomerPhone('');
             
             if (isOnline) {
               const { data: searchData } = await supabase
@@ -118,7 +121,6 @@ export default function DriverDashboard() {
 
     loadDriverState();
 
-    // 3. Supabase Realtime untuk Notifikasi Suara Order Baru Masuk
     const channel = supabase
       .channel('driver_audio_notifications')
       .on(
@@ -185,9 +187,8 @@ export default function DriverDashboard() {
     router.push('/login');
   };
 
-  // Fungsi WhatsApp menggunakan nomor HP asli Customer dari database
   const getWhatsAppLink = () => {
-    if (!activeOrder) return '#';
+    if (!activeOrder || !customerPhone) return '#';
     let text = '';
     
     if (activeOrder.service === 'FOOD' || activeOrder.service === 'MART') {
@@ -349,14 +350,20 @@ export default function DriverDashboard() {
               </div>
             </div>
             
-            <a 
-              href={getWhatsAppLink()} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs tracking-wide"
-            >
-              <MessageCircle className="w-4 h-4" /> Hubungi Pelanggan (WhatsApp)
-            </a>
+            {customerPhone ? (
+              <a 
+                href={getWhatsAppLink()} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs tracking-wide"
+              >
+                <MessageCircle className="w-4 h-4" /> Hubungi Pelanggan (WhatsApp)
+              </a>
+            ) : (
+              <div className="w-full py-3 bg-slate-800 text-slate-400 border border-slate-700 rounded-2xl text-center text-xs font-bold">
+                Nomor HP Pelanggan Belum Terdaftar di Profil
+              </div>
+            )}
 
             <div className="pt-2">
               {activeOrder.status === 'ACCEPTED' && (
