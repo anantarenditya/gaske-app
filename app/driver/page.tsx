@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
 import { playNotificationSound } from '@/lib/utils/sound'; 
-import Notification from '@/components/Notification';
+// UBAH NAMA IMPORT DISINI AGAR TIDAK BENTROK
+import ToastNotification from '@/components/Notification';
 import { Power, CheckCircle2, MapPin, Navigation, BellRing, Loader2, UserCheck, RefreshCw, Navigation2, History, LogOut, MessageCircle, Wallet, ArrowUpRight, User } from 'lucide-react';
 
 interface Order {
@@ -35,7 +36,7 @@ export default function DriverDashboard() {
   const [completedCount, setCompletedCount] = useState(0);
   const [customerPhone, setCustomerPhone] = useState<string>('');
 
-  // State untuk Toast Notification
+  // State untuk Toast Notification Dalam Aplikasi
   const [notif, setNotif] = useState({
     show: false,
     title: '',
@@ -54,6 +55,13 @@ export default function DriverDashboard() {
     let isMounted = true;
     let pollInterval: NodeJS.Timeout;
 
+    // 1. Minta Izin Notifikasi Sistem (Browser)
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (window.Notification.permission === 'default') {
+        window.Notification.requestPermission();
+      }
+    }
+
     async function loadDriverState() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -62,7 +70,6 @@ export default function DriverDashboard() {
       }
 
       const fetchDriverData = async () => {
-        // 1. Cek Order Berjalan
         const { data: activeData } = await supabase
           .from('orders')
           .select('*')
@@ -70,7 +77,6 @@ export default function DriverDashboard() {
           .in('status', ['ACCEPTED', 'DRIVER_ARRIVED', 'IN_TRIP'])
           .maybeSingle();
 
-        // 2. Ambil Statistik Pendapatan Selesai
         const { data: completedData } = await supabase
           .from('orders')
           .select('final_price, created_at')
@@ -135,8 +141,22 @@ export default function DriverDashboard() {
         (payload) => {
           const newOrder = payload.new as Order;
           if (newOrder.status === 'SEARCHING_DRIVER' && isOnline) {
+            
+            // 1. Notifikasi Dalam Website
             playNotificationSound();
             showNotification('Orderan Baru Masuk!', `Ada pesanan ${newOrder.service} di sekitar Anda.`, 'info');
+
+            // 2. Notifikasi Sistem (Luar Website)
+            if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted') {
+              const systemNotif = new window.Notification('🚨 GASKE: ORDERAN BARU!', {
+                body: `Layanan: ${newOrder.service}\nJemput: ${newOrder.pickup_address}`,
+              });
+
+              systemNotif.onclick = function() {
+                window.focus();
+                this.close();
+              };
+            }
           }
         }
       )
@@ -151,11 +171,18 @@ export default function DriverDashboard() {
 
   const handleToggleOnline = (status: boolean) => {
     setIsOnline(status);
+    
+    if (status && typeof window !== 'undefined' && 'Notification' in window) {
+      if (window.Notification.permission === 'default') {
+        window.Notification.requestPermission();
+      }
+    }
+
     if (!status) {
       setAvailableOrders([]);
       showNotification('Status Offline', 'Anda berhenti menerima orderan.', 'warning');
     } else {
-      showNotification('Status Online', 'Anda siap menerima orderan masuk.', 'success');
+      showNotification('Status Online', 'Sistem pelacakan dan notifikasi aktif.', 'success');
     }
   };
 
@@ -227,10 +254,10 @@ export default function DriverDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100">
+    <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
       
-      {/* KONTROL KOMPONEN NOTIFIKASI MELAYANG */}
-      <Notification 
+      {/* PANGGIL KOMPONEN DENGAN NAMA BARU */}
+      <ToastNotification 
         show={notif.show} 
         title={notif.title} 
         message={notif.message} 
