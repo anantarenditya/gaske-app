@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Loader2 } from 'lucide-react';
+import Notification from '@/components/Notification';
 
 // Ikon khusus untuk motor Driver
 const motorIcon = L.divIcon({
@@ -15,40 +17,83 @@ const motorIcon = L.divIcon({
   iconAnchor: [20, 20],
 });
 
-export default function CustomerTracking({ params }: { params: { id: string } }) {
+export default function CustomerTracking({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  // Kompatibilitas aman untuk Next.js 15+ dan 16+
+  const resolvedParams = 'then' in params ? use(params) : params;
+  const orderId = resolvedParams.id;
+
+  const router = useRouter();
   const supabase = createClient();
   const [driverLocation, setDriverLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [orderStatus, setOrderStatus] = useState<string>('');
+
+  // State untuk Notifikasi Melayang
+  const [notif, setNotif] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success' as 'success' | 'info' | 'warning',
+  });
+
+  const showNotification = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    setNotif({ show: true, title, message, type });
+    setTimeout(() => {
+      setNotif((prev) => ({ ...prev, show: false }));
+    }, 4000);
+  };
 
   useEffect(() => {
-    // 1. Ambil lokasi driver saat halaman pertama kali dibuka
+    // 1. Ambil data awal order (lokasi & status) saat halaman dibuka
     const fetchInitialData = async () => {
       const { data } = await supabase
         .from('orders')
-        .select('driver_lat, driver_lng')
-        .eq('id', params.id)
+        .select('driver_lat, driver_lng, status')
+        .eq('id', orderId)
         .single();
         
-      if (data && data.driver_lat && data.driver_lng) {
-        setDriverLocation({ lat: data.driver_lat, lng: data.driver_lng });
+      if (data) {
+        if (data.driver_lat && data.driver_lng) {
+          setDriverLocation({ lat: data.driver_lat, lng: data.driver_lng });
+        }
+        if (data.status) {
+          setOrderStatus(data.status);
+        }
       }
     };
     fetchInitialData();
 
-    // 2. Subscribe ke Supabase Realtime untuk memantau pergerakan
-    const channel = supabase.channel(`tracking_order_${params.id}`)
+    // 2. Subscribe ke Supabase Realtime untuk memantau pergerakan & status
+    const channel = supabase.channel(`tracking_order_${orderId}`)
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE', // Hanya dengarkan event update
+          event: 'UPDATE',
           schema: 'public',
           table: 'orders',
-          filter: `id=eq.${params.id}`, // Hanya order ini saja
+          filter: `id=eq.${orderId}`,
         },
         (payload) => {
           const newData = payload.new as any;
+          
+          // Update koordinat GPS jika ada
           if (newData.driver_lat && newData.driver_lng) {
-            // Update state, peta Leaflet akan otomatis menggeser motor!
             setDriverLocation({ lat: newData.driver_lat, lng: newData.driver_lng });
+          }
+
+          // Deteksi perubahan status pesanan untuk memunculkan notifikasi
+          if (newData.status && newData.status !== orderStatus) {
+            setOrderStatus(newData.status);
+
+            if (newData.status === 'DRIVER_ARRIVED') {
+              showNotification('Driver Tiba!', 'Driver sudah berada di lokasi penjemputan Anda.', 'info');
+            } else if (newData.status === 'IN_TRIP') {
+              showNotification('Dalam Perjalanan', 'Perjalanan menuju tujuan telah dimulai.', 'success');
+            } else if (newData.status === 'COMPLETED') {
+              showNotification('Pesanan Selesai', 'Terima kasih telah menggunakan layanan GASKE!', 'success');
+              setTimeout(() => {
+                router.push('/customer');
+              }, 2000);
+            }
           }
         }
       )
@@ -57,13 +102,33 @@ export default function CustomerTracking({ params }: { params: { id: string } })
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [params.id, supabase]);
+  }, [orderId, supabase, orderStatus, router]);
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'ACCEPTED': return 'Driver sedang menuju tempat jemput...';
+      case 'DRIVER_ARRIVED': return 'Driver sudah tiba di lokasi jemput!';
+      case 'IN_TRIP': return 'Perjalanan menuju tujuan...';
+      case 'COMPLETED': return 'Pesanan telah selesai.';
+      default: return 'Melacak posisi driver...';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <div className="bg-slate-800 p-5 shadow-lg z-10">
-        <h1 className="text-white font-bold text-lg">Live Tracking Driver</h1>
-        <p className="text-emerald-400 text-xs">Driver sedang menuju ke lokasi Anda...</p>
+    <div className="min-h-screen bg-slate-900 flex flex-col relative">
+      
+      {/* KONTROL NOTIFIKASI MELAYANG */}
+      <Notification 
+        show={notif.show} 
+        title={notif.title} 
+        message={notif.message} 
+        type={notif.type} 
+        onClose={() => setNotif({ ...notif, show: false })} 
+      />
+
+      <div className="bg-slate-800 p-5 shadow-lg z-10 border-b border-slate-700">
+        <h1 className="text-white font-black text-base">Live Tracking Driver</h1>
+        <p className="text-emerald-400 text-xs font-medium mt-0.5">{getStatusText(orderStatus)}</p>
       </div>
 
       <div className="flex-1 w-full relative">
@@ -86,7 +151,7 @@ export default function CustomerTracking({ params }: { params: { id: string } })
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin mb-3 text-emerald-500" />
-            <p className="text-sm">Menunggu koneksi GPS dari Driver...</p>
+            <p className="text-xs font-bold">Menunggu koneksi GPS dari Driver...</p>
           </div>
         )}
       </div>

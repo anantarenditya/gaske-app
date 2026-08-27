@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
 import { playNotificationSound } from '@/lib/utils/sound'; 
+import Notification from '@/components/Notification';
 import { Power, CheckCircle2, MapPin, Navigation, BellRing, Loader2, UserCheck, RefreshCw, Navigation2, History, LogOut, MessageCircle, Wallet, ArrowUpRight, User } from 'lucide-react';
 
 interface Order {
@@ -33,6 +34,21 @@ export default function DriverDashboard() {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [customerPhone, setCustomerPhone] = useState<string>('');
+
+  // State untuk Toast Notification
+  const [notif, setNotif] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success' as 'success' | 'info' | 'warning',
+  });
+
+  const showNotification = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    setNotif({ show: true, title, message, type });
+    setTimeout(() => {
+      setNotif((prev) => ({ ...prev, show: false }));
+    }, 4000);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -77,7 +93,6 @@ export default function DriverDashboard() {
           if (activeData) {
             setActiveOrder(activeData as Order);
 
-            // Langsung ambil nomor HP dari data order itu sendiri
             if (activeData.customer_phone) {
               let phoneNum = activeData.customer_phone.trim();
               if (phoneNum.startsWith('0')) {
@@ -121,6 +136,7 @@ export default function DriverDashboard() {
           const newOrder = payload.new as Order;
           if (newOrder.status === 'SEARCHING_DRIVER' && isOnline) {
             playNotificationSound();
+            showNotification('Orderan Baru Masuk!', `Ada pesanan ${newOrder.service} di sekitar Anda.`, 'info');
           }
         }
       )
@@ -135,7 +151,12 @@ export default function DriverDashboard() {
 
   const handleToggleOnline = (status: boolean) => {
     setIsOnline(status);
-    if (!status) setAvailableOrders([]);
+    if (!status) {
+      setAvailableOrders([]);
+      showNotification('Status Offline', 'Anda berhenti menerima orderan.', 'warning');
+    } else {
+      showNotification('Status Online', 'Anda siap menerima orderan masuk.', 'success');
+    }
   };
 
   const handleAcceptOrder = async (orderId: string) => {
@@ -150,9 +171,10 @@ export default function DriverDashboard() {
       .eq('status', 'SEARCHING_DRIVER');
 
     if (error) {
-      alert('Gagal mengambil orderan (mungkin sudah diambil driver lain).');
+      showNotification('Gagal', 'Orderan mungkin sudah diambil driver lain.', 'warning');
     } else {
-      window.location.reload();
+      showNotification('Berhasil!', 'Orderan berhasil diambil.', 'success');
+      setTimeout(() => window.location.reload(), 1000);
     }
     setLoading(false);
   };
@@ -166,9 +188,16 @@ export default function DriverDashboard() {
       .update({ status: nextStatus })
       .eq('id', activeOrder.id);
 
-    if (error) alert('Gagal memperbarui status: ' + error.message);
-    else if (nextStatus === 'COMPLETED') setActiveOrder(null);
-    else setActiveOrder({ ...activeOrder, status: nextStatus });
+    if (error) {
+      showNotification('Gagal', 'Gagal memperbarui status: ' + error.message, 'warning');
+    } else {
+      showNotification('Status Diperbarui', `Status pesanan berhasil diubah.`, 'success');
+      if (nextStatus === 'COMPLETED') {
+        setActiveOrder(null);
+      } else {
+        setActiveOrder({ ...activeOrder, status: nextStatus });
+      }
+    }
     
     setLoading(false);
   };
@@ -199,6 +228,16 @@ export default function DriverDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100">
+      
+      {/* KONTROL KOMPONEN NOTIFIKASI MELAYANG */}
+      <Notification 
+        show={notif.show} 
+        title={notif.title} 
+        message={notif.message} 
+        type={notif.type} 
+        onClose={() => setNotif({ ...notif, show: false })} 
+      />
+
       <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="max-w-md mx-auto flex justify-between items-center relative z-10">

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import Notification from '@/components/Notification';
 import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
@@ -23,7 +24,7 @@ export default function CustomerDashboard() {
   const supabase = createClient();
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [driverPhone, setDriverPhone] = useState<string>('6281234567890');
+  const [driverPhone, setDriverPhone] = useState<string>('');
 
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
@@ -31,6 +32,21 @@ export default function CustomerDashboard() {
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+
+  // State untuk Toast Notification Kustomer
+  const [notif, setNotif] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success' as 'success' | 'info' | 'warning',
+  });
+
+  const showNotification = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    setNotif({ show: true, title, message, type });
+    setTimeout(() => {
+      setNotif((prev) => ({ ...prev, show: false }));
+    }, 4000);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -55,22 +71,35 @@ export default function CustomerDashboard() {
 
         if (activeData) {
           if (isMounted) {
+            // Deteksi perubahan status untuk memunculkan notifikasi
+            if (activeOrder && activeOrder.status !== activeData.status) {
+              if (activeData.status === 'ACCEPTED') {
+                showNotification('Driver Ditemukan!', 'Driver telah menerima pesanan Anda.', 'success');
+              } else if (activeData.status === 'DRIVER_ARRIVED') {
+                showNotification('Driver Tiba', 'Driver sudah berada di lokasi jemput.', 'info');
+              } else if (activeData.status === 'IN_TRIP') {
+                showNotification('Dalam Perjalanan', 'Perjalanan menuju tujuan dimulai.', 'success');
+              }
+            }
+
             setActiveOrder(activeData as Order);
             setShowRatingModal(false);
 
             if (activeData.driver_id) {
               const { data: profileData } = await supabase
                 .from('profiles')
-                .select('phone')
+                .select('phone_number')
                 .eq('id', activeData.driver_id)
                 .single();
 
-              if (profileData?.phone) {
-                let phoneNum = profileData.phone.trim();
+              if (profileData?.phone_number) {
+                let phoneNum = profileData.phone_number.trim();
                 if (phoneNum.startsWith('0')) {
                   phoneNum = '62' + phoneNum.slice(1);
                 }
                 setDriverPhone(phoneNum);
+              } else {
+                setDriverPhone('');
               }
             }
 
@@ -80,7 +109,7 @@ export default function CustomerDashboard() {
         }
 
         setActiveOrder(null);
-        setDriverPhone('6281234567890');
+        setDriverPhone('');
 
         const { data: unratedData } = await supabase
           .from('orders')
@@ -112,7 +141,7 @@ export default function CustomerDashboard() {
       isMounted = false;
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [supabase, router]);
+  }, [supabase, router, activeOrder]);
 
   const handleSubmitRating = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,11 +154,12 @@ export default function CustomerDashboard() {
       .eq('id', completedOrderId);
 
     if (error) {
-      alert('Gagal mengirim ulasan: ' + error.message);
+      showNotification('Gagal', 'Gagal mengirim ulasan: ' + error.message, 'warning');
     } else {
       setShowRatingModal(false);
       setCompletedOrderId(null);
-      window.location.reload();
+      showNotification('Terima Kasih!', 'Ulasan berhasil dikirim.', 'success');
+      setTimeout(() => window.location.reload(), 1000);
     }
     setSubmittingRating(false);
   };
@@ -151,6 +181,16 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
+      
+      {/* KONTROL KOMPONEN NOTIFIKASI MELAYANG */}
+      <Notification 
+        show={notif.show} 
+        title={notif.title} 
+        message={notif.message} 
+        type={notif.type} 
+        onClose={() => setNotif({ ...notif, show: false })} 
+      />
+
       {showRatingModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-5 animate-fade-in text-center">
@@ -248,14 +288,20 @@ export default function CustomerDashboard() {
               </div>
 
               {activeOrder.status !== 'SEARCHING_DRIVER' && (
-                <a
-                  href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
-                >
-                  <MessageCircle className="w-4 h-4" /> Hubungi Driver via WhatsApp
-                </a>
+                driverPhone ? (
+                  <a
+                    href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Hubungi Driver via WhatsApp
+                  </a>
+                ) : (
+                  <div className="w-full py-3 bg-slate-800 text-slate-400 border border-slate-700 rounded-2xl text-center text-xs font-bold">
+                    Nomor HP Driver Belum Terdaftar di Profil
+                  </div>
+                )
               )}
             </div>
           </div>
