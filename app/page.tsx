@@ -14,7 +14,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             
-            {/* LOGO BARU G */}
+            {/* LOGO KOTAK HURUF G */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
               <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-md border border-emerald-300/30">
                 <span className="text-white font-black text-xl tracking-tighter">G</span>
@@ -177,7 +177,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
             
-            {/* LOGO BARU G (FOOTER) */}
+            {/* LOGO KOTAK HURUF G (FOOTER) */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
               <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
                 <span className="text-white font-black text-xl tracking-tighter">G</span>
