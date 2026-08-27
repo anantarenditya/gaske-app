@@ -13,17 +13,19 @@ export default function LandingPage() {
       <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center">
-                <Bike className="w-5 h-5 text-white" />
+            
+            {/* LOGO BARU G */}
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
+              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-md border border-emerald-300/30">
+                <span className="text-white font-black text-xl tracking-tighter">G</span>
               </div>
-              <span className="font-black text-2xl tracking-tighter text-emerald-700">GASKE</span>
+              <span className="font-black text-2xl tracking-[0.1em] text-emerald-700">GASKE</span>
             </div>
+
             <div className="flex items-center gap-3 sm:gap-4">
               <button onClick={() => router.push('/login')} className="text-sm font-bold text-slate-600 hover:text-emerald-600 transition cursor-pointer">
                 Masuk
               </button>
-              {/* TOMBOL DAFTAR ATAS KANAN -> KUSTOMER (/register) */}
               <button onClick={() => router.push('/register')} className="text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full shadow-md shadow-emerald-200 transition cursor-pointer">
                 Daftar
               </button>
@@ -45,9 +47,7 @@ export default function LandingPage() {
             Satu aplikasi untuk semua kebutuhan harian Anda. Transportasi cepat, pesan antar makanan, hingga belanja kebutuhan instan.
           </p>
           
-          {/* TOMBOL UTAMA HERO */}
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto px-4">
-            {/* PESAN SEKARANG -> KUSTOMER (/register) */}
             <button onClick={() => router.push('/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-200 transition group cursor-pointer">
               Pesan Sekarang <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
             </button>
@@ -63,7 +63,6 @@ export default function LandingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* RIDE -> /register */}
               <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Bike className="w-7 h-7" />
@@ -77,7 +76,6 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              {/* SEND -> /register */}
               <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-rose-500 hover:shadow-2xl hover:shadow-rose-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Package className="w-7 h-7" />
@@ -91,7 +89,6 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              {/* FOOD -> /register */}
               <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-amber-500 hover:shadow-2xl hover:shadow-amber-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Utensils className="w-7 h-7" />
@@ -105,7 +102,6 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              {/* MART -> /register */}
               <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-100 transition duration-300 cursor-pointer">
                 <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <ShoppingBag className="w-7 h-7" />
@@ -180,12 +176,15 @@ export default function LandingPage() {
       <footer className="bg-slate-950 text-slate-300 py-12 md:py-16 px-4 border-t border-slate-900">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center">
-                <Bike className="w-5 h-5 text-white" />
+            
+            {/* LOGO BARU G (FOOTER) */}
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
+              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
+                <span className="text-white font-black text-xl tracking-tighter">G</span>
               </div>
-              <span className="font-black text-2xl tracking-tighter text-white">GASKE</span>
+              <span className="font-black text-2xl tracking-[0.1em] text-white">GASKE</span>
             </div>
+
             <p className="text-sm text-slate-500 font-medium">
               Platform transportasi dan pengiriman lokal terpercaya dan tercepat di kota Anda.
             </p>
@@ -214,7 +213,7 @@ export default function LandingPage() {
             <h4 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Kontak</h4>
             <ul className="space-y-3 text-sm font-medium text-slate-400">
               <li>support@gaske.id</li>
-              <li>0812-3456-7890</li>
+              <li>Layanan Resmi GASKE Indonesia</li>
             </ul>
           </div>
         </div>
