@@ -48,28 +48,22 @@ export default function SendPage() {
   const [distanceKm, setDistanceKm] = useState(0);
   const [price, setPrice] = useState(0);
   
-  // HANYA ADA 2 METODE: TUNAI ATAU QRIS
   const [paymentMethod, setPaymentMethod] = useState<'Tunai (Cash)' | 'QRIS'>('Tunai (Cash)');
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // --- FUNGSI TARIF DINAMIS OTOMATIS BERDASARKAN WAKTU & JARAK ---
   const calculateDynamicPrice = (distKm: number) => {
     const currentHour = new Date().getHours();
-    
     let basePrice = 7000;
     let perKmPrice = 2000;
 
     if (currentHour >= 5 && currentHour < 17) {
-      // Jam 05.00 - 17.00
       basePrice = 7000;
       perKmPrice = 2000;
     } else if (currentHour >= 17 && currentHour < 21) {
-      // Jam 17.00 - 21.00
       basePrice = 8000;
       perKmPrice = 2500;
     } else {
-      // Jam 21.00 - 05.00
       basePrice = 10000;
       perKmPrice = 3000;
     }
@@ -80,7 +74,6 @@ export default function SendPage() {
       return basePrice + ((distKm - 4) * perKmPrice);
     }
   };
-  // -------------------------------------------------------------
 
   const calculateDistance = (p1: LatLng, p2: LatLng) => {
     const R = 6371;
@@ -96,15 +89,30 @@ export default function SendPage() {
     return Math.max(1, Math.round(R * c));
   };
 
+  // --- FUNGSI MENGUBAH TITIK PETA MENJADI NAMA TEMPAT / JALAN ASLI ---
   const fetchAddressName = async (lat: number, lng: number) => {
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+        headers: {
+          'Accept-Language': 'id' // Memaksa hasil pencarian dalam Bahasa Indonesia
+        }
+      });
       const data = await res.json();
-      if (data && data.display_name) {
-        return data.display_name.split(',').slice(0, 3).join(',').trim();
+      if (data && data.address) {
+        const addr = data.address;
+        const specific = addr.amenity || addr.building || addr.shop || addr.road || addr.village || addr.suburb || '';
+        const region = addr.city || addr.county || addr.town || addr.state_district || '';
+        
+        if (specific && region) {
+          return `${specific}, ${region}`;
+        } else if (data.display_name) {
+          return data.display_name.split(',').slice(0, 3).join(',').trim();
+        }
       }
-    } catch {}
-    return `Lokasi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    } catch (e) {
+      console.error("Gagal mengambil nama tempat:", e);
+    }
+    return `Jl. / Area Sekitar (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
   };
 
   useEffect(() => {
@@ -128,11 +136,11 @@ export default function SendPage() {
 
           const dist = calculateDistance(coords, destCoords);
           setDistanceKm(dist);
-          setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+          setPrice(calculateDynamicPrice(dist));
         },
-        (error) => {
-          console.warn("GPS Otomatis Gagal:", error.message);
-          setPickup('Gagal melacak GPS. Geser peta manual.');
+        async () => {
+          const addressName = await fetchAddressName(pickupCoords.lat, pickupCoords.lng);
+          setPickup(addressName);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
@@ -155,10 +163,10 @@ export default function SendPage() {
 
           const dist = calculateDistance(coords, destCoords);
           setDistanceKm(dist);
-          setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+          setPrice(calculateDynamicPrice(dist));
         },
         (error) => {
-          alert(`Gagal mengambil lokasi: ${error.message}. Pastikan izin lokasi (Location) diizinkan di browser.`);
+          alert(`Gagal mengambil lokasi: ${error.message}. Pastikan izin lokasi diizinkan di browser.`);
           setPickup('Lokasi tidak ditemukan');
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -177,7 +185,9 @@ export default function SendPage() {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=id&limit=5`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=id&limit=5`, {
+          headers: { 'Accept-Language': 'id' }
+        });
         const data = await res.json();
         setSearchResults(data || []);
       } catch {
@@ -201,13 +211,13 @@ export default function SendPage() {
       setPickupCoords(newTarget);
       setPickup(shortName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     } else {
       const dist = calculateDistance(pickupCoords, newTarget);
       setDestCoords(newTarget);
       setDestination(shortName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     }
     setSearchQuery('');
     setSearchResults([]);
@@ -222,13 +232,13 @@ export default function SendPage() {
       setPickupCoords(newCoords);
       setPickup(addressName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     } else {
       const dist = calculateDistance(pickupCoords, newCoords);
       setDestCoords(newCoords);
       setDestination(addressName);
       setDistanceKm(dist);
-      setPrice(calculateDynamicPrice(dist)); // Otomatis terupdate
+      setPrice(calculateDynamicPrice(dist));
     }
   };
 
@@ -237,7 +247,6 @@ export default function SendPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 1. AMBIL NOMOR HP DARI PROFIL TERLEBIH DAHULU
     const { data: userProfile } = await supabase
       .from('profiles')
       .select('phone_number')
@@ -246,10 +255,9 @@ export default function SendPage() {
 
     const detailPenerima = `Penerima: ${receiverName} (${receiverPhone}) | Barang: ${itemDetail}`;
     
-    // 2. SIMPAN NOMOR HP LANGSUNG KE TABEL ORDERS
     const { error } = await supabase.from('orders').insert({
       customer_id: user.id, 
-      customer_phone: userProfile?.phone_number || '', // <-- INI YANG MENYELESAIKAN MASALAH WA
+      customer_phone: userProfile?.phone_number || '',
       service: 'SEND', 
       status: 'SEARCHING_DRIVER',
       pickup_address: pickup, 
@@ -278,8 +286,6 @@ export default function SendPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
-      
-      {/* MODAL QRIS GASKE.ID */}
       {showQrisModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-5 text-center relative animate-fade-in text-slate-100">
@@ -296,7 +302,6 @@ export default function SendPage() {
               <p className="text-xs text-emerald-400 font-bold mt-1">Total: {formatRupiah(price)}</p>
             </div>
 
-            {/* GAMBAR QRIS ASLI */}
             <div className="p-3 bg-white rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-inner">
               <img 
                 src="/images/qris.jpg" 
@@ -326,7 +331,7 @@ export default function SendPage() {
             </button>
             <div>
               <h1 className="text-sm font-black text-white tracking-tight leading-none">GASKE SEND</h1>
-              <p className="text-[10px] text-emerald-400 font-semibold mt-1">Titik ambil otomatis dari GPS Anda</p>
+              <p className="text-[10px] text-emerald-400 font-semibold mt-1">Klik peta untuk memilih lokasi</p>
             </div>
           </div>
           <button
