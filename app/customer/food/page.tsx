@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, Utensils, ShoppingBag, Loader2, MapPin, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X, Utensils } from 'lucide-react';
 import type { LatLng } from '@/app/components/DeliveryMap';
 
 const DeliveryMap = dynamic(
@@ -20,19 +20,20 @@ interface MerchantPlace {
   address: string;
   lat: number;
   lng: number;
-  type: 'FOOD' | 'MART';
+  type: 'FOOD';
 }
 
-export default function GaskeFoodMartPage() {
+export default function GaskeFoodPage() {
   const router = useRouter();
   const supabase = createClient();
-
-  const [activeTab, setActiveTab] = useState<'FOOD' | 'MART'>('FOOD');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [merchants, setMerchants] = useState<MerchantPlace[]>([]);
   const [selectedMerchant, setSelectedMerchant] = useState<MerchantPlace | null>(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
+
+  // STATE: Untuk menyimpan nama warung/restoran yang diketik manual
+  const [manualStoreName, setManualStoreName] = useState('');
 
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerCoords, setCustomerCoords] = useState<LatLng>({ lat: -7.2575, lng: 112.7521 });
@@ -84,7 +85,6 @@ export default function GaskeFoodMartPage() {
     setDistanceKm(calculateDistance(storeCoords.lat, storeCoords.lng, customerCoords.lat, customerCoords.lng));
   }, [storeCoords, customerCoords]);
 
-  // Otomatis memperbarui teks detail alamat rumah saat titik koordinat di peta diklik/bergeser
   useEffect(() => {
     const fetchNewAddress = async () => {
       try {
@@ -112,20 +112,19 @@ export default function GaskeFoodMartPage() {
         setCustomerCoords(coords);
         setStoreCoords(coords);
 
-        searchPlacesReal(activeTab, '', coords.lat, coords.lng);
+        searchPlacesReal('', coords.lat, coords.lng);
       });
     } else {
-      searchPlacesReal(activeTab, '', -7.2575, 112.7521);
+      searchPlacesReal('', -7.2575, 112.7521);
     }
-  }, [activeTab, supabase, router]);
+  }, [supabase, router]);
 
-  const searchPlacesReal = async (type: 'FOOD' | 'MART', keyword: string, lat: number, lng: number) => {
+  const searchPlacesReal = async (keyword: string, lat: number, lng: number) => {
     setLoadingSearch(true);
-    const defaultKeyword = type === 'FOOD' ? 'Restoran' : 'Indomaret';
-    const query = keyword ? keyword : defaultKeyword;
+    const query = keyword.trim() ? keyword : 'Restoran';
 
     try {
-      const viewbox = `${lng - 0.1},${lat + 0.1},${lng + 0.1},${lat - 0.1}`;
+      const viewbox = `${lng - 0.2},${lat + 0.2},${lng + 0.2},${lat - 0.2}`;
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&limit=10`;
       
       const res = await fetch(url);
@@ -138,7 +137,7 @@ export default function GaskeFoodMartPage() {
           address: item.display_name.split(',').slice(1, 4).join(',').trim(),
           lat: parseFloat(item.lat),
           lng: parseFloat(item.lon),
-          type: type,
+          type: 'FOOD',
         }));
         
         setMerchants(parsed);
@@ -154,7 +153,7 @@ export default function GaskeFoodMartPage() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    searchPlacesReal(activeTab, searchQuery, customerCoords.lat, customerCoords.lng);
+    searchPlacesReal(searchQuery, customerCoords.lat, customerCoords.lng);
   };
 
   const handleSelectMerchant = (place: MerchantPlace) => {
@@ -174,14 +173,14 @@ export default function GaskeFoodMartPage() {
   const displayDistance = String(distanceKm).replace('.', ',');
 
   const executeCheckout = async (method: 'Tunai (Cash)' | 'QRIS') => {
-    if (!selectedMerchant || !customOrder.trim()) return;
+    if (!selectedMerchant || !customOrder.trim() || !manualStoreName.trim()) return;
 
     setLoadingCheckout(true);
 
     const res = await createOrderAction({
-      service: activeTab,
-      pickupAddress: `${selectedMerchant.name} (${selectedMerchant.address})`,
-      destinationAddress: `${customerAddress} | Rincian: [${customOrder}] | Bayar: ${method}`,
+      service: 'FOOD', // Pastikan service adalah FOOD
+      pickupAddress: `${manualStoreName} (Area: ${selectedMerchant.name}, ${selectedMerchant.address})`,
+      destinationAddress: `${customerAddress} | Pesanan: [${customOrder}] | Bayar: ${method}`,
       distanceKm,
       paymentMethod: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
       pickupLat: storeCoords.lat,
@@ -196,7 +195,18 @@ export default function GaskeFoodMartPage() {
   };
 
   const handleCheckout = () => {
-    if (!selectedMerchant || !customOrder.trim()) return;
+    if (!selectedMerchant) {
+      alert('Silakan cari dan pilih area terlebih dahulu!');
+      return;
+    }
+    if (!manualStoreName.trim()) {
+      alert('Mohon ketik nama spesifik warung/restoran!');
+      return;
+    }
+    if (!customOrder.trim()) {
+      alert('Mohon isi daftar pesanan makanan!');
+      return;
+    }
 
     if (paymentMethod === 'QRIS') {
       setShowQrisModal(true);
@@ -251,26 +261,19 @@ export default function GaskeFoodMartPage() {
           <button onClick={() => router.back()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-slate-900">{activeTab === 'FOOD' ? 'GASKE FOOD' : 'GASKE MART'}</h1>
+          <h1 className="font-bold text-slate-900">GASKE FOOD</h1>
         </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        <div className="flex bg-slate-200 p-1 rounded-2xl gap-1">
-          <button onClick={() => { setActiveTab('FOOD'); setSearchQuery(''); }} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${activeTab === 'FOOD' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'}`}>
-            <Utensils className="w-4 h-4" /> Cari Tempat Makan
-          </button>
-          <button onClick={() => { setActiveTab('MART'); setSearchQuery(''); }} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${activeTab === 'MART' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'}`}>
-            <ShoppingBag className="w-4 h-4" /> Cari Minimarket
-          </button>
-        </div>
-
+        
+        {/* PENCARIAN AREA */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={activeTab === 'FOOD' ? 'Cari warung/restoran...' : 'Ketik Indomaret atau Alfamart...'}
+            placeholder="Cari area, desa, atau jalan (Cth: Pasirian)..."
             className="w-full p-3.5 pl-10 pr-20 bg-white rounded-2xl text-xs font-bold border border-slate-100 shadow-sm focus:ring-2 focus:ring-emerald-500"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
@@ -281,7 +284,7 @@ export default function GaskeFoodMartPage() {
 
         <div className="space-y-2">
           <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1 px-1">
-            <Store className="w-3.5 h-3.5 text-emerald-600" /> Lokasi Ditemukan ({merchants.length})
+            <Utensils className="w-3.5 h-3.5 text-emerald-600" /> Area Ditemukan ({merchants.length})
           </h3>
 
           {loadingSearch ? (
@@ -290,7 +293,7 @@ export default function GaskeFoodMartPage() {
             </div>
           ) : merchants.length === 0 ? (
             <div className="p-4 bg-white rounded-2xl text-center text-xs font-bold text-slate-400 border border-slate-100">
-              Tempat tidak ditemukan. Coba ketik nama lain (misal: Alfamart).
+              Lokasi tidak ditemukan. Coba ketik nama desa/jalan yang lebih umum.
             </div>
           ) : (
             <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -309,6 +312,22 @@ export default function GaskeFoodMartPage() {
             </div>
           )}
         </div>
+
+        {/* INPUT NAMA TOKO/RESTO MANUAL */}
+        {selectedMerchant && (
+          <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
+            <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Manual Nama Warung/Resto (Wajib):
+            </label>
+            <input
+              type="text"
+              value={manualStoreName}
+              onChange={(e) => setManualStoreName(e.target.value)}
+              placeholder="Cth: Warung Nasi Padang Makmur..."
+              className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+        )}
 
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-2.5">
           <div className="flex justify-between items-center px-1">
@@ -346,12 +365,12 @@ export default function GaskeFoodMartPage() {
         {selectedMerchant && (
           <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Anda di {selectedMerchant.name}:
+              <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Makanan Anda di {manualStoreName || 'Warung'}:
             </label>
             <textarea
               value={customOrder}
               onChange={(e) => setCustomOrder(e.target.value)}
-              placeholder={activeTab === 'FOOD' ? "Cth: Nasi Goreng Pedas (2 porsi), Es Teh Manis (2 gelas)" : "Cth: Air Mineral Aqua 1.5L (2 botol), Indomie Goreng (5 bungkus)"}
+              placeholder="Cth: Nasi Goreng Pedas (2 porsi), Es Teh Manis (2 gelas)"
               rows={4}
               className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500 resize-none"
             />
@@ -384,7 +403,8 @@ export default function GaskeFoodMartPage() {
         )}
       </main>
 
-      {selectedMerchant && customOrder.trim() && (
+      {/* Tombol muncul hanya jika Area terpilih, Nama Warung diisi, dan Pesanan diisi */}
+      {selectedMerchant && manualStoreName.trim() && customOrder.trim() && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 shadow-2xl">
           <div className="max-w-md mx-auto space-y-2.5">
             <div className="flex justify-between items-center text-xs">
