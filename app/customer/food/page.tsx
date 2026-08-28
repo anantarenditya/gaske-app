@@ -78,13 +78,11 @@ export default function GaskeFoodPage() {
     searchPlacesReal(searchQuery);
   };
 
+  // Hanya memindahkan koordinat peta & pin (Titik A), tidak merubah kotak nama warung
   const handleSelectMerchant = (place: MerchantPlace) => {
     const newCoords = { lat: place.lat, lng: place.lng };
     setStoreCoords(newCoords);
     setFlyTarget(newCoords);
-    if (!manualStoreName) {
-      setManualStoreName(place.name);
-    }
     setMerchants([]);
   };
 
