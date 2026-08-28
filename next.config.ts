@@ -7,7 +7,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig = {
-  // kosongkan atau biarkan seperti yang kamu punya
+  turbopack: {}, // INI DIA KODE PENYELAMATNYA!
 };
 
 export default withPWA(nextConfig);
