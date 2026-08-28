@@ -2,12 +2,12 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: process.env.NODE_ENV === "development", // PWA mati saat development, aktif saat di Vercel
   register: true,
+  disable: process.env.NODE_ENV === "development",
 });
 
 const nextConfig = {
-  // Tambahkan konfigurasi Next.js lainnya di sini jika ada
+  // kosongkan atau biarkan seperti yang kamu punya
 };
 
 export default withPWA(nextConfig);
