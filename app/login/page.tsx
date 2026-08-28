@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { loginAction } from '@/app/actions/auth';
-import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, HelpCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -101,7 +101,23 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-500">
+          {/* Fitur Lupa Sandi Hubungi Admin */}
+          <div className="mt-6 pt-5 border-t border-slate-100 text-center space-y-2">
+            <p className="text-xs text-slate-500">
+              Lupa kata sandi akun Anda?
+            </p>
+            <a
+              href="https://wa.me/6285803004649?text=Halo%20Admin%20Gaske,%20saya%20lupa%20sandi%20dan%20ingin%20meminta%20tolong%20hapus%20akun%20lama%20saya%20agar%20bisa%20mendaftar%20baru."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition border border-slate-200 flex items-center justify-center gap-1.5"
+            >
+              <HelpCircle className="w-4 h-4 text-emerald-600" />
+              Hubungi Admin (Hapus Akun Lama)
+            </a>
+          </div>
+
+          <div className="mt-5 text-center text-xs text-slate-500">
             Belum punya akun?{' '}
             <Link href="/register" className="font-bold text-emerald-600 hover:underline">
               Daftar sekarang
