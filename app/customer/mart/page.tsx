@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
 import type { LatLng } from '@/app/components/DualPinMap';
 
 const DualPinMap = dynamic(
@@ -14,9 +14,21 @@ const DualPinMap = dynamic(
   { ssr: false }
 );
 
+interface MerchantPlace {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+}
+
 export default function GaskeMartPage() {
   const router = useRouter();
   const supabase = createClient();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [merchants, setMerchants] = useState<MerchantPlace[]>([]);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
   const [activePinMode, setActivePinMode] = useState<'STORE' | 'HOUSE'>('STORE');
   const [storeCoords, setStoreCoords] = useState<LatLng>({ lat: -7.2575, lng: 112.7521 });
@@ -31,6 +43,50 @@ export default function GaskeMartPage() {
   const [paymentMethod, setPaymentMethod] = useState<'Tunai (Cash)' | 'QRIS'>('Tunai (Cash)');
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
+
+  // --- PENCARIAN OTOMATIS BERBASIS TEKS ---
+  const searchPlacesReal = async (keyword: string) => {
+    if (!keyword.trim()) return;
+    setLoadingSearch(true);
+
+    try {
+      const finalQuery = `${keyword}, Jawa Timur`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&limit=10`;
+      
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        const parsed: MerchantPlace[] = data.map((item: any) => ({
+          id: String(item.place_id),
+          name: item.name || item.display_name.split(',')[0],
+          address: item.display_name.split(',').slice(1, 4).join(',').trim(),
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.lon),
+        }));
+        setMerchants(parsed);
+      } else {
+        setMerchants([]);
+      }
+    } catch (error) {
+      console.error('Pencarian gagal', error);
+    }
+    setLoadingSearch(false);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    searchPlacesReal(searchQuery);
+  };
+
+  const handleSelectMerchant = (place: MerchantPlace) => {
+    const newCoords = { lat: place.lat, lng: place.lng };
+    setStoreCoords(newCoords);
+    setFlyTarget(newCoords);
+    if (!manualStoreName) {
+      setManualStoreName(place.name);
+    }
+  };
 
   const calculateDynamicPrice = (distKm: number) => {
     const currentHour = new Date().getHours();
@@ -212,6 +268,50 @@ export default function GaskeMartPage() {
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
+        {/* KOTAK PENCARIAN OTOMATIS */}
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari area, desa, atau jalan (Cth: Pasirian)..."
+            className="w-full p-3.5 pl-10 pr-20 bg-white rounded-2xl text-xs font-bold border border-slate-100 shadow-sm focus:ring-2 focus:ring-emerald-500"
+          />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
+          <button type="submit" className="absolute right-2 top-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition">
+            Cari
+          </button>
+        </form>
+
+        {/* HASIL PENCARIAN OTOMATIS */}
+        {merchants.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1 px-1">
+              <Store className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length})
+            </h3>
+            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+              {merchants.map((place) => (
+                <button
+                  key={place.id}
+                  type="button"
+                  onClick={() => handleSelectMerchant(place)}
+                  className="p-3.5 rounded-2xl border text-left shrink-0 w-56 bg-white text-slate-800 border-slate-100 hover:border-emerald-500 transition shadow-sm"
+                >
+                  <p className="font-bold text-xs truncate">{place.name}</p>
+                  <p className="text-[10px] mt-0.5 text-slate-400 truncate">{place.address}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {loadingSearch && (
+          <div className="flex items-center gap-2 py-2 justify-center text-xs text-slate-500">
+            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> Mencari lokasi...
+          </div>
+        )}
+
+        {/* INPUT MANUAL NAMA TOKO */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
             <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Toko / Minimarket (Wajib):
@@ -225,6 +325,7 @@ export default function GaskeMartPage() {
           />
         </div>
 
+        {/* PETA DUA PIN (A & B) */}
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex gap-2">
             <button
