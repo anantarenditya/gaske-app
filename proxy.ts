@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
+  let supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -19,7 +19,10 @@ export async function proxy(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
-            response.cookies.set(name, value, options);
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              maxAge: 60 * 60 * 24 * 30, // Tiket Permanen 30 Hari
+            });
           });
         },
       },
@@ -31,15 +34,15 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  let redirectUrl = null;
 
-  // 1. Jika belum login dan mencoba akses dashboard
+  // 1. Jika BELUM login, cegah masuk ke dalam dashboard
   if (!user && (pathname.startsWith('/customer') || pathname.startsWith('/driver') || pathname.startsWith('/admin'))) {
-    const redirectUrl = request.nextUrl.clone();
+    redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = pathname.startsWith('/driver') ? '/driver/login' : '/login';
-    return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Cek Role User
+  // 2. Jika SUDAH login, atur lalu lintasnya
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -47,27 +50,44 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    // Baca role dari profile DB atau dari metadata auth jika profile DB belum terupdate
     const userRole = profile?.role || user.user_metadata?.role || 'customer';
 
-    // Jika user mengakses /driver tetapi rolenya bukan driver
-    if (pathname.startsWith('/driver') && userRole !== 'driver') {
-      const redirectUrl = request.nextUrl.clone();
+    // BINGO: Jika sudah login tapi nyasar ke halaman awal/login, lemparkan langsung ke dalam!
+    if (pathname === '/login' || pathname === '/register' || pathname === '/') {
+      redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = userRole === 'driver' ? '/driver' : '/customer';
+    } 
+    // Batasi akses jika role tidak sesuai
+    else if (pathname.startsWith('/driver') && userRole !== 'driver') {
+      redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/customer';
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Jika user mengakses /customer tetapi rolenya driver
-    if (pathname.startsWith('/customer') && userRole === 'driver') {
-      const redirectUrl = request.nextUrl.clone();
+    } 
+    else if (pathname.startsWith('/customer') && userRole === 'driver') {
+      redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/driver';
-      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  return response;
+  // 3. Eksekusi perpindahan halaman DAN bawa serta tiket 30 harinya
+  if (redirectUrl) {
+    const finalResponse = NextResponse.redirect(redirectUrl);
+    
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      finalResponse.cookies.set(cookie.name, cookie.value, {
+        ...cookie,
+        maxAge: 60 * 60 * 24 * 30, // Kloning tiket agar tidak hilang saat dipindah
+      });
+    });
+    
+    return finalResponse;
+  }
+
+  return supabaseResponse;
 }
 
+// 4. Bangunkan satpam untuk MENJAGA SEMUA HALAMAN (kecuali gambar/file statis)
 export const config = {
-  matcher: ['/customer/:path*', '/driver/:path*', '/admin/:path*'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };

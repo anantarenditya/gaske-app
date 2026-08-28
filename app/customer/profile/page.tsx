@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft, User, Phone, Mail, Lock, LogOut, Save, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, Lock, LogOut, Save, Loader2, ShieldCheck, Eye, EyeOff, Bell } from 'lucide-react';
 
 export default function CustomerProfilePage() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function CustomerProfilePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -28,6 +29,12 @@ export default function CustomerProfilePage() {
 
       setEmail(user.email || '');
       setNewEmail(user.email || '');
+
+      // Sinkronisasi User ID ke OneSignal
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function(onesignal: any) {
+        await onesignal.login(user.id);
+      });
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -52,7 +59,6 @@ export default function CustomerProfilePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // MENGGUNAKAN UPSERT: Aman jika baris profil belum ada di database
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -98,6 +104,37 @@ export default function CustomerProfilePage() {
     setSaving(false);
   };
 
+  const handleRequestNotification = async () => {
+    setNotifLoading(true);
+
+    // Pengaman waktu (timeout) 4 detik agar loading berhenti otomatis jika tertahan
+    const timeout = setTimeout(() => {
+      setNotifLoading(false);
+      alert('Permintaan izin memakan waktu terlalu lama. Pastikan URL aplikasi Anda sudah terdaftar di Dashboard OneSignal.');
+    }, 4000);
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(onesignal: any) {
+      try {
+        clearTimeout(timeout);
+        // Menggunakan method bawaan OneSignal v16 untuk meminta izin
+        const permission = await onesignal.Notifications.requestPermission();
+        setNotifLoading(false);
+        
+        if (permission) {
+          alert('Notifikasi berhasil diaktifkan di perangkat ini!');
+        } else {
+          alert('Izin notifikasi ditolak oleh perangkat Anda.');
+        }
+      } catch (error) {
+        clearTimeout(timeout);
+        setNotifLoading(false);
+        console.error('Gagal meminta izin:', error);
+        alert('Terjadi kesalahan saat mengaktifkan notifikasi.');
+      }
+    });
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
@@ -134,6 +171,24 @@ export default function CustomerProfilePage() {
           </div>
           <h2 className="text-lg font-black text-white">{fullName || 'Pengguna GASKE'}</h2>
           <p className="text-xs text-slate-400">{email}</p>
+        </div>
+
+        {/* SECTION NOTIFIKASI ONESIGNAL */}
+        <div className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
+            <Bell className="w-3.5 h-3.5 text-emerald-400" /> Notifikasi Pesanan
+          </h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Aktifkan izin notifikasi agar Anda mendapatkan info status pesanan secara instan langsung di HP Anda.
+          </p>
+          <button
+            type="button"
+            onClick={handleRequestNotification}
+            disabled={notifLoading}
+            className="w-full py-3.5 bg-slate-700 hover:bg-slate-600 text-emerald-400 font-black rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition border border-emerald-500/30"
+          >
+            {notifLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />} Aktifkan Notifikasi Perangkat
+          </button>
         </div>
 
         <form onSubmit={handleUpdateProfile} className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-4">
