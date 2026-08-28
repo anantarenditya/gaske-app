@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, ShoppingBag, Loader2, MapPin, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
 import type { LatLng } from '@/app/components/DeliveryMap';
 
 const DeliveryMap = dynamic(
@@ -32,7 +32,6 @@ export default function GaskeMartPage() {
   const [selectedMerchant, setSelectedMerchant] = useState<MerchantPlace | null>(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
-  // STATE BARU: Untuk menyimpan nama toko yang diketik manual oleh pelanggan
   const [manualStoreName, setManualStoreName] = useState('');
 
   const [customerAddress, setCustomerAddress] = useState('');
@@ -46,7 +45,6 @@ export default function GaskeMartPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // --- FUNGSI TARIF DINAMIS OTOMATIS BERDASARKAN WAKTU & JARAK ---
   const calculateDynamicPrice = (distKm: number) => {
     const currentHour = new Date().getHours();
     
@@ -121,12 +119,12 @@ export default function GaskeMartPage() {
 
   const searchPlacesReal = async (keyword: string, lat: number, lng: number) => {
     setLoadingSearch(true);
-    // Diperbarui agar lebih umum jika kosong
     const query = keyword.trim() ? keyword : 'Minimarket';
 
     try {
-      const viewbox = `${lng - 0.2},${lat + 0.2},${lng + 0.2},${lat - 0.2}`;
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&limit=10`;
+      // Penambahan wilayah Jawa Timur secara otomatis agar akurat di tingkat kecamatan/desa
+      const finalQuery = `${query}, Jawa Timur`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&limit=10`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -180,7 +178,6 @@ export default function GaskeMartPage() {
 
     const res = await createOrderAction({
       service: 'MART',
-      // Mengirimkan nama toko manual yang diketik pelanggan ke driver
       pickupAddress: `${manualStoreName} (Area: ${selectedMerchant.name}, ${selectedMerchant.address})`,
       destinationAddress: `${customerAddress} | Rincian: [${customOrder}] | Bayar: ${method}`,
       distanceKm,
@@ -268,7 +265,6 @@ export default function GaskeMartPage() {
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        {/* PENCARIAN DIUBAH MENJADI LEBIH UMUM */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -314,7 +310,6 @@ export default function GaskeMartPage() {
           )}
         </div>
 
-        {/* INPUT NAMA TOKO MANUAL */}
         {selectedMerchant && (
           <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
             <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
@@ -324,7 +319,7 @@ export default function GaskeMartPage() {
               type="text"
               value={manualStoreName}
               onChange={(e) => setManualStoreName(e.target.value)}
-              placeholder="Cth: Indomaret Pasirian / Warung Nasi Padang..."
+              placeholder="Cth: Indomaret Pasirian / Alfamart..."
               className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -404,7 +399,6 @@ export default function GaskeMartPage() {
         )}
       </main>
 
-      {/* Tombol akan muncul hanya jika Area dipilih, Nama Toko diisi, dan Daftar Belanjaan diisi */}
       {selectedMerchant && manualStoreName.trim() && customOrder.trim() && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 shadow-2xl">
           <div className="max-w-md mx-auto space-y-2.5">

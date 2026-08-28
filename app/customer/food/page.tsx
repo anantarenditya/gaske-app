@@ -32,7 +32,6 @@ export default function GaskeFoodPage() {
   const [selectedMerchant, setSelectedMerchant] = useState<MerchantPlace | null>(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
-  // STATE: Untuk menyimpan nama warung/restoran yang diketik manual
   const [manualStoreName, setManualStoreName] = useState('');
 
   const [customerAddress, setCustomerAddress] = useState('');
@@ -46,7 +45,6 @@ export default function GaskeFoodPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // --- FUNGSI TARIF DINAMIS OTOMATIS BERDASARKAN WAKTU & JARAK ---
   const calculateDynamicPrice = (distKm: number) => {
     const currentHour = new Date().getHours();
     
@@ -124,8 +122,9 @@ export default function GaskeFoodPage() {
     const query = keyword.trim() ? keyword : 'Restoran';
 
     try {
-      const viewbox = `${lng - 0.2},${lat + 0.2},${lng + 0.2},${lat - 0.2}`;
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&viewbox=${viewbox}&bounded=1&limit=10`;
+      // Penambahan wilayah Jawa Timur secara otomatis agar akurat di tingkat kecamatan/desa
+      const finalQuery = `${query}, Jawa Timur`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&limit=10`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -178,7 +177,7 @@ export default function GaskeFoodPage() {
     setLoadingCheckout(true);
 
     const res = await createOrderAction({
-      service: 'FOOD', // Pastikan service adalah FOOD
+      service: 'FOOD',
       pickupAddress: `${manualStoreName} (Area: ${selectedMerchant.name}, ${selectedMerchant.address})`,
       destinationAddress: `${customerAddress} | Pesanan: [${customOrder}] | Bayar: ${method}`,
       distanceKm,
@@ -267,7 +266,6 @@ export default function GaskeFoodPage() {
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
-        {/* PENCARIAN AREA */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -313,7 +311,6 @@ export default function GaskeFoodPage() {
           )}
         </div>
 
-        {/* INPUT NAMA TOKO/RESTO MANUAL */}
         {selectedMerchant && (
           <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
             <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
@@ -403,7 +400,6 @@ export default function GaskeFoodPage() {
         )}
       </main>
 
-      {/* Tombol muncul hanya jika Area terpilih, Nama Warung diisi, dan Pesanan diisi */}
       {selectedMerchant && manualStoreName.trim() && customOrder.trim() && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 shadow-2xl">
           <div className="max-w-md mx-auto space-y-2.5">
