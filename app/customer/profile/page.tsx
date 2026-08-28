@@ -107,17 +107,16 @@ export default function CustomerProfilePage() {
   const handleRequestNotification = async () => {
     setNotifLoading(true);
 
-    // Pengaman waktu (timeout) 4 detik agar loading berhenti otomatis jika tertahan
+    // Pengaman waktu (timeout) 10 detik untuk mengantisipasi jaringan lambat
     const timeout = setTimeout(() => {
       setNotifLoading(false);
       alert('Permintaan izin memakan waktu terlalu lama. Pastikan URL aplikasi Anda sudah terdaftar di Dashboard OneSignal.');
-    }, 4000);
+    }, 10000);
 
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(onesignal: any) {
       try {
         clearTimeout(timeout);
-        // Menggunakan method bawaan OneSignal v16 untuk meminta izin
         const permission = await onesignal.Notifications.requestPermission();
         setNotifLoading(false);
         
