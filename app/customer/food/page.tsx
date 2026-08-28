@@ -2,51 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, Loader2, MapPin, Navigation, ShoppingCart, Store, LocateFixed, Edit3, CreditCard, QrCode, X, Utensils } from 'lucide-react';
+import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
+import type { LatLng } from '@/app/components/DualPinMap';
 
-const storeIcon = L.divIcon({
-  html: `<div class="w-8 h-8 bg-emerald-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-black text-xs">A</div>`,
-  className: 'custom-pin',
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-});
-
-const houseIcon = L.divIcon({
-  html: `<div class="w-8 h-8 bg-rose-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white font-bold text-xs">B</div>`,
-  className: 'custom-pin',
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-});
-
-export interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-function MapFlyTo({ center }: { center: LatLng }) {
-  const map = useMap();
-  useEffect(() => {
-    if (center) {
-      map.flyTo([center.lat, center.lng], 15, { duration: 1.2 });
-    }
-  }, [map, center]);
-  return null;
-}
-
-function MapClickHandler({ onSelect }: { onSelect: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click(e) {
-      onSelect(e.latlng.lat, e.latlng.lng);
-    },
-  });
-  return null;
-}
+const DualPinMap = dynamic(
+  () => import('@/app/components/DualPinMap'),
+  { ssr: false }
+);
 
 export default function GaskeFoodPage() {
   const router = useRouter();
@@ -104,7 +70,6 @@ export default function GaskeFoodPage() {
     setDistanceKm(Math.max(1, dist));
   }, [storeCoords, customerCoords]);
 
-  // Reverse geocoding untuk alamat rumah otomatis
   useEffect(() => {
     const fetchNewAddress = async () => {
       try {
@@ -247,7 +212,6 @@ export default function GaskeFoodPage() {
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
-        {/* INPUT MANUAL NAMA WARUNG/RESTO */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
             <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Warung / Restoran (Wajib):
@@ -261,7 +225,6 @@ export default function GaskeFoodPage() {
           />
         </div>
 
-        {/* MODE SELEKTOR PETA (TITIK A / B) */}
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex gap-2">
             <button
@@ -288,15 +251,13 @@ export default function GaskeFoodPage() {
             {activePinMode === 'STORE' ? '📍 Ketuk peta untuk memindahkan Pin Hijau (Toko)' : '📍 Ketuk peta untuk memindahkan Pin Merah (Rumah Anda)'}
           </p>
 
-          <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner">
-            <MapContainer center={[storeCoords.lat, storeCoords.lng]} zoom={14} className="w-full h-full">
-              <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-              <Marker position={[storeCoords.lat, storeCoords.lng]} icon={storeIcon} />
-              <Marker position={[customerCoords.lat, customerCoords.lng]} icon={houseIcon} />
-              <MapClickHandler onSelect={handleMapClick} />
-              {flyTarget && <MapFlyTo center={flyTarget} />}
-            </MapContainer>
-          </div>
+          <DualPinMap
+            storeCoords={storeCoords}
+            customerCoords={customerCoords}
+            activePinMode={activePinMode}
+            flyTarget={flyTarget}
+            onSelectCoords={handleMapClick}
+          />
 
           <div className="flex justify-between items-center pt-1">
             <span className="text-xs font-bold text-slate-600">Jarak Pengiriman: <strong className="text-emerald-600">{displayDistance} KM</strong></span>
@@ -310,7 +271,6 @@ export default function GaskeFoodPage() {
           </div>
         </div>
 
-        {/* DETAIL ALAMAT RUMAH */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
             <Navigation className="w-3.5 h-3.5 text-rose-500" /> Detail Alamat Rumah (Otomatis dari Peta/GPS):
@@ -324,7 +284,6 @@ export default function GaskeFoodPage() {
           />
         </div>
 
-        {/* DAFTAR PESANAN */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
             <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Makanan Anda:
@@ -338,7 +297,6 @@ export default function GaskeFoodPage() {
           />
         </div>
 
-        {/* METODE PEMBAYARAN */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2.5">
           <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Pilih Metode Pembayaran</label>
           <div className="grid grid-cols-2 gap-2">
