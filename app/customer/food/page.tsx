@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X, Utensils } from 'lucide-react';
 import type { LatLng } from '@/app/components/DualPinMap';
 
 const DualPinMap = dynamic(
@@ -22,7 +22,7 @@ interface MerchantPlace {
   lng: number;
 }
 
-export default function GaskeMartPage() {
+export default function GaskeFoodPage() {
   const router = useRouter();
   const supabase = createClient();
 
@@ -178,7 +178,6 @@ export default function GaskeMartPage() {
   };
 
   const deliveryFee = calculateDynamicPrice(distanceKm); 
-  // Format desimal jarak menggunakan koma (contoh: 1,3 3,9 2,4)
   const displayDistance = distanceKm.toFixed(1).replace('.', ',');
 
   const executeCheckout = async (method: 'Tunai (Cash)' | 'QRIS') => {
@@ -187,9 +186,9 @@ export default function GaskeMartPage() {
     setLoadingCheckout(true);
 
     const res = await createOrderAction({
-      service: 'MART',
+      service: 'FOOD',
       pickupAddress: `${manualStoreName} (Titik A di Peta)`,
-      destinationAddress: `${customerAddress} | Rincian: [${customOrder}] | Bayar: ${method}`,
+      destinationAddress: `${customerAddress} | Pesanan: [${customOrder}] | Bayar: ${method}`,
       distanceKm,
       paymentMethod: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
       pickupLat: storeCoords.lat,
@@ -205,11 +204,11 @@ export default function GaskeMartPage() {
 
   const handleCheckout = () => {
     if (!manualStoreName.trim()) {
-      alert('Mohon ketik nama spesifik toko/minimarket!');
+      alert('Mohon ketik nama spesifik warung/restoran!');
       return;
     }
     if (!customOrder.trim()) {
-      alert('Mohon isi daftar belanjaan!');
+      alert('Mohon isi daftar pesanan makanan!');
       return;
     }
 
@@ -262,13 +261,12 @@ export default function GaskeMartPage() {
           <button onClick={() => router.back()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-slate-900">GASKE MART</h1>
+          <h1 className="font-bold text-slate-900">GASKE FOOD</h1>
         </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
-        {/* KOTAK PENCARIAN */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -289,11 +287,10 @@ export default function GaskeMartPage() {
           </div>
         )}
 
-        {/* HASIL PENCARIAN DENGAN DETAIL NAMA & ALAMAT LENGKAP (VERTICAL LIST) */}
         {merchants.length > 0 && (
           <div className="bg-white p-3 rounded-3xl border border-slate-100 shadow-sm space-y-2 max-h-60 overflow-y-auto">
             <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-1 flex items-center gap-1">
-              <Store className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
+              <Utensils className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
             </h3>
             <div className="space-y-1.5">
               {merchants.map((place) => (
@@ -311,21 +308,19 @@ export default function GaskeMartPage() {
           </div>
         )}
 
-        {/* INPUT MANUAL NAMA TOKO */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Toko / Minimarket (Wajib):
+            <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Warung / Restoran (Wajib):
           </label>
           <input
             type="text"
             value={manualStoreName}
             onChange={(e) => setManualStoreName(e.target.value)}
-            placeholder="Cth: Indomaret Pasirian / Toko Kelontong..."
+            placeholder="Cth: Warung Nasi Padang Pasirian..."
             className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
-        {/* PETA */}
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex gap-2">
             <button
@@ -335,7 +330,7 @@ export default function GaskeMartPage() {
                 activePinMode === 'STORE' ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-slate-100 text-slate-600'
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Toko (A)
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Toko/Warung (A)
             </button>
             <button
               type="button"
@@ -355,6 +350,8 @@ export default function GaskeMartPage() {
           <DualPinMap
             storeCoords={storeCoords}
             customerCoords={customerCoords}
+            storeLabel={manualStoreName || "Titik Toko (A)"}
+            customerLabel={customerAddress}
             activePinMode={activePinMode}
             flyTarget={flyTarget}
             onSelectCoords={handleMapClick}
@@ -387,12 +384,12 @@ export default function GaskeMartPage() {
 
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Edit3 className="w-4 h-4 text-emerald-600" /> Daftar Belanjaan:
+            <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Makanan Anda:
           </label>
           <textarea
             value={customOrder}
             onChange={(e) => setCustomOrder(e.target.value)}
-            placeholder="Cth: Air Mineral Aqua 1.5L (2 botol), Indomie Goreng (5 bungkus)"
+            placeholder="Cth: Nasi Goreng Pedas (2 porsi), Es Teh Manis (2 gelas)"
             rows={4}
             className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />

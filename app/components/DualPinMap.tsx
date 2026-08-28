@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -27,6 +27,8 @@ export interface LatLng {
 interface DualPinMapProps {
   storeCoords: LatLng;
   customerCoords: LatLng;
+  storeLabel: string;
+  customerLabel: string;
   activePinMode: 'STORE' | 'HOUSE';
   flyTarget: LatLng | null;
   onSelectCoords: (lat: number, lng: number) => void;
@@ -54,6 +56,8 @@ function MapClickHandler({ onSelect }: { onSelect: (lat: number, lng: number) =>
 export default function DualPinMap({
   storeCoords,
   customerCoords,
+  storeLabel,
+  customerLabel,
   activePinMode,
   flyTarget,
   onSelectCoords,
@@ -63,13 +67,31 @@ export default function DualPinMap({
   return (
     <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner">
       <MapContainer center={[center.lat, center.lng]} zoom={14} className="w-full h-full">
-        {/* Lapisan peta standar dengan detail nama jalan dan wilayah terlengkap */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={[storeCoords.lat, storeCoords.lng]} icon={storeIcon} />
-        <Marker position={[customerCoords.lat, customerCoords.lng]} icon={houseIcon} />
+        
+        {/* Marker Toko (A) dengan Popup Nama Tempat */}
+        <Marker position={[storeCoords.lat, storeCoords.lng]} icon={storeIcon}>
+          <Popup>
+            <div className="text-xs font-bold text-slate-800">
+              <span className="text-emerald-600 uppercase font-black">LOKASI TOKO (A):</span><br />
+              {storeLabel || "Belum ada nama toko"}
+            </div>
+          </Popup>
+        </Marker>
+        
+        {/* Marker Rumah (B) dengan Popup Alamat */}
+        <Marker position={[customerCoords.lat, customerCoords.lng]} icon={houseIcon}>
+          <Popup>
+            <div className="text-xs font-bold text-slate-800">
+              <span className="text-rose-600 uppercase font-black">LOKASI RUMAH (B):</span><br />
+              {customerLabel || "Memuat alamat..."}
+            </div>
+          </Popup>
+        </Marker>
+
         <MapClickHandler onSelect={onSelectCoords} />
         {flyTarget && <MapFlyTo center={flyTarget} />}
       </MapContainer>

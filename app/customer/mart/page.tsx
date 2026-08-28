@@ -44,14 +44,13 @@ export default function GaskeMartPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // --- PENCARIAN OTOMATIS BERBASIS TEKS ---
   const searchPlacesReal = async (keyword: string) => {
     if (!keyword.trim()) return;
     setLoadingSearch(true);
 
     try {
       const finalQuery = `${keyword}, Jawa Timur`;
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&limit=10`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&addressdetails=1&limit=10`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -60,7 +59,7 @@ export default function GaskeMartPage() {
         const parsed: MerchantPlace[] = data.map((item: any) => ({
           id: String(item.place_id),
           name: item.name || item.display_name.split(',')[0],
-          address: item.display_name.split(',').slice(1, 4).join(',').trim(),
+          address: item.display_name,
           lat: parseFloat(item.lat),
           lng: parseFloat(item.lon),
         }));
@@ -86,6 +85,7 @@ export default function GaskeMartPage() {
     if (!manualStoreName) {
       setManualStoreName(place.name);
     }
+    setMerchants([]);
   };
 
   const calculateDynamicPrice = (distKm: number) => {
@@ -132,8 +132,7 @@ export default function GaskeMartPage() {
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${customerCoords.lat}&lon=${customerCoords.lng}&zoom=18&addressdetails=1`);
         const data = await res.json();
         if (data && data.display_name) {
-          const shortName = data.display_name.split(',').slice(0, 3).join(',').trim();
-          setCustomerAddress(shortName);
+          setCustomerAddress(data.display_name);
         }
       } catch {
         setCustomerAddress(`Lokasi (${customerCoords.lat.toFixed(4)}, ${customerCoords.lng.toFixed(4)})`);
@@ -179,7 +178,7 @@ export default function GaskeMartPage() {
   };
 
   const deliveryFee = calculateDynamicPrice(distanceKm); 
-  const displayDistance = String(distanceKm).replace('.', ',');
+  const displayDistance = distanceKm.toFixed(1).replace('.', ',');
 
   const executeCheckout = async (method: 'Tunai (Cash)' | 'QRIS') => {
     if (!manualStoreName.trim() || !customOrder.trim()) return;
@@ -268,7 +267,6 @@ export default function GaskeMartPage() {
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
-        {/* KOTAK PENCARIAN OTOMATIS */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -283,35 +281,33 @@ export default function GaskeMartPage() {
           </button>
         </form>
 
-        {/* HASIL PENCARIAN OTOMATIS */}
-        {merchants.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1 px-1">
-              <Store className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length})
-            </h3>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-              {merchants.map((place) => (
-                <button
-                  key={place.id}
-                  type="button"
-                  onClick={() => handleSelectMerchant(place)}
-                  className="p-3.5 rounded-2xl border text-left shrink-0 w-56 bg-white text-slate-800 border-slate-100 hover:border-emerald-500 transition shadow-sm"
-                >
-                  <p className="font-bold text-xs truncate">{place.name}</p>
-                  <p className="text-[10px] mt-0.5 text-slate-400 truncate">{place.address}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {loadingSearch && (
           <div className="flex items-center gap-2 py-2 justify-center text-xs text-slate-500">
             <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> Mencari lokasi...
           </div>
         )}
 
-        {/* INPUT MANUAL NAMA TOKO */}
+        {merchants.length > 0 && (
+          <div className="bg-white p-3 rounded-3xl border border-slate-100 shadow-sm space-y-2 max-h-60 overflow-y-auto">
+            <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-1 flex items-center gap-1">
+              <Store className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
+            </h3>
+            <div className="space-y-1.5">
+              {merchants.map((place) => (
+                <button
+                  key={place.id}
+                  type="button"
+                  onClick={() => handleSelectMerchant(place)}
+                  className="w-full p-3 rounded-2xl border text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col gap-0.5 shadow-sm"
+                >
+                  <p className="font-bold text-xs text-slate-900">{place.name}</p>
+                  <p className="text-[11px] text-slate-500 leading-tight">{place.address}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
             <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Toko / Minimarket (Wajib):
@@ -325,7 +321,6 @@ export default function GaskeMartPage() {
           />
         </div>
 
-        {/* PETA DUA PIN (A & B) */}
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex gap-2">
             <button
@@ -355,6 +350,8 @@ export default function GaskeMartPage() {
           <DualPinMap
             storeCoords={storeCoords}
             customerCoords={customerCoords}
+            storeLabel={manualStoreName || "Titik Toko (A)"}
+            customerLabel={customerAddress}
             activePinMode={activePinMode}
             flyTarget={flyTarget}
             onSelectCoords={handleMapClick}
