@@ -108,7 +108,7 @@ export default function LocationPickerMap({
     return `Lokasi (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
   };
 
-  // Pencarian Otomatis Tempat (Forward Geocoding)
+  // Pencarian Otomatis Tempat (Forward Geocoding) - Diperbarui untuk Jawa Timur
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 3) {
       setSearchResults([]);
@@ -118,10 +118,14 @@ export default function LocationPickerMap({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
+        // PERUBAHAN DI SINI: Menambahkan viewbox Jawa Timur dan bounded=1
+        // viewbox = left(lon), top(lat), right(lon), bottom(lat)
+        const eastJavaViewbox = "110.8,-6.6,114.6,-8.8"; 
+        
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
             searchQuery
-          )}&countrycodes=id&limit=5`
+          )}&countrycodes=id&viewbox=${eastJavaViewbox}&bounded=1&limit=8`
         );
         const data = await res.json();
         setSearchResults(data || []);
@@ -210,7 +214,8 @@ export default function LocationPickerMap({
           />
           {isSearching && (
             <Loader2 className="w-4 h-4 animate-spin text-emerald-600 absolute right-3" />
-          )}
+          )
+        }
         </div>
 
         {/* Search Recommendations Dropdown */}
