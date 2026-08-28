@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { createOrderAction } from '@/app/actions/order';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X, Utensils } from 'lucide-react';
+import { ArrowLeft, Loader2, Navigation, ShoppingCart, Store, Search, LocateFixed, Edit3, CreditCard, QrCode, X } from 'lucide-react';
 import type { LatLng } from '@/app/components/DualPinMap';
 
 const DualPinMap = dynamic(
@@ -22,7 +22,7 @@ interface MerchantPlace {
   lng: number;
 }
 
-export default function GaskeFoodPage() {
+export default function GaskeMartPage() {
   const router = useRouter();
   const supabase = createClient();
 
@@ -44,14 +44,13 @@ export default function GaskeFoodPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // --- PENCARIAN OTOMATIS BERBASIS TEKS ---
   const searchPlacesReal = async (keyword: string) => {
     if (!keyword.trim()) return;
     setLoadingSearch(true);
 
     try {
       const finalQuery = `${keyword}, Jawa Timur`;
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&limit=10`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalQuery)}&countrycodes=id&addressdetails=1&limit=10`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -60,7 +59,7 @@ export default function GaskeFoodPage() {
         const parsed: MerchantPlace[] = data.map((item: any) => ({
           id: String(item.place_id),
           name: item.name || item.display_name.split(',')[0],
-          address: item.display_name.split(',').slice(1, 4).join(',').trim(),
+          address: item.display_name,
           lat: parseFloat(item.lat),
           lng: parseFloat(item.lon),
         }));
@@ -79,7 +78,6 @@ export default function GaskeFoodPage() {
     searchPlacesReal(searchQuery);
   };
 
-  // Saat hasil pencarian diklik, pindahkan titik toko (A) ke sana otomatis
   const handleSelectMerchant = (place: MerchantPlace) => {
     const newCoords = { lat: place.lat, lng: place.lng };
     setStoreCoords(newCoords);
@@ -87,6 +85,7 @@ export default function GaskeFoodPage() {
     if (!manualStoreName) {
       setManualStoreName(place.name);
     }
+    setMerchants([]);
   };
 
   const calculateDynamicPrice = (distKm: number) => {
@@ -133,8 +132,7 @@ export default function GaskeFoodPage() {
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${customerCoords.lat}&lon=${customerCoords.lng}&zoom=18&addressdetails=1`);
         const data = await res.json();
         if (data && data.display_name) {
-          const shortName = data.display_name.split(',').slice(0, 3).join(',').trim();
-          setCustomerAddress(shortName);
+          setCustomerAddress(data.display_name);
         }
       } catch {
         setCustomerAddress(`Lokasi (${customerCoords.lat.toFixed(4)}, ${customerCoords.lng.toFixed(4)})`);
@@ -180,7 +178,8 @@ export default function GaskeFoodPage() {
   };
 
   const deliveryFee = calculateDynamicPrice(distanceKm); 
-  const displayDistance = String(distanceKm).replace('.', ',');
+  // Format desimal jarak menggunakan koma (contoh: 1,3 3,9 2,4)
+  const displayDistance = distanceKm.toFixed(1).replace('.', ',');
 
   const executeCheckout = async (method: 'Tunai (Cash)' | 'QRIS') => {
     if (!manualStoreName.trim() || !customOrder.trim()) return;
@@ -188,9 +187,9 @@ export default function GaskeFoodPage() {
     setLoadingCheckout(true);
 
     const res = await createOrderAction({
-      service: 'FOOD',
+      service: 'MART',
       pickupAddress: `${manualStoreName} (Titik A di Peta)`,
-      destinationAddress: `${customerAddress} | Pesanan: [${customOrder}] | Bayar: ${method}`,
+      destinationAddress: `${customerAddress} | Rincian: [${customOrder}] | Bayar: ${method}`,
       distanceKm,
       paymentMethod: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
       pickupLat: storeCoords.lat,
@@ -206,11 +205,11 @@ export default function GaskeFoodPage() {
 
   const handleCheckout = () => {
     if (!manualStoreName.trim()) {
-      alert('Mohon ketik nama spesifik warung/restoran!');
+      alert('Mohon ketik nama spesifik toko/minimarket!');
       return;
     }
     if (!customOrder.trim()) {
-      alert('Mohon isi daftar pesanan makanan!');
+      alert('Mohon isi daftar belanjaan!');
       return;
     }
 
@@ -263,13 +262,13 @@ export default function GaskeFoodPage() {
           <button onClick={() => router.back()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold text-slate-900">GASKE FOOD</h1>
+          <h1 className="font-bold text-slate-900">GASKE MART</h1>
         </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
         
-        {/* KOTAK PENCARIAN OTOMATIS */}
+        {/* KOTAK PENCARIAN */}
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -284,49 +283,49 @@ export default function GaskeFoodPage() {
           </button>
         </form>
 
-        {/* HASIL PENCARIAN OTOMATIS */}
-        {merchants.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1 px-1">
-              <Utensils className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length})
-            </h3>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-              {merchants.map((place) => (
-                <button
-                  key={place.id}
-                  type="button"
-                  onClick={() => handleSelectMerchant(place)}
-                  className="p-3.5 rounded-2xl border text-left shrink-0 w-56 bg-white text-slate-800 border-slate-100 hover:border-emerald-500 transition shadow-sm"
-                >
-                  <p className="font-bold text-xs truncate">{place.name}</p>
-                  <p className="text-[10px] mt-0.5 text-slate-400 truncate">{place.address}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {loadingSearch && (
           <div className="flex items-center gap-2 py-2 justify-center text-xs text-slate-500">
             <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> Mencari lokasi...
           </div>
         )}
 
-        {/* INPUT MANUAL NAMA WARUNG */}
+        {/* HASIL PENCARIAN DENGAN DETAIL NAMA & ALAMAT LENGKAP (VERTICAL LIST) */}
+        {merchants.length > 0 && (
+          <div className="bg-white p-3 rounded-3xl border border-slate-100 shadow-sm space-y-2 max-h-60 overflow-y-auto">
+            <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-1 flex items-center gap-1">
+              <Store className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
+            </h3>
+            <div className="space-y-1.5">
+              {merchants.map((place) => (
+                <button
+                  key={place.id}
+                  type="button"
+                  onClick={() => handleSelectMerchant(place)}
+                  className="w-full p-3 rounded-2xl border text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col gap-0.5 shadow-sm"
+                >
+                  <p className="font-bold text-xs text-slate-900">{place.name}</p>
+                  <p className="text-[11px] text-slate-500 leading-tight">{place.address}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* INPUT MANUAL NAMA TOKO */}
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Warung / Restoran (Wajib):
+            <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Toko / Minimarket (Wajib):
           </label>
           <input
             type="text"
             value={manualStoreName}
             onChange={(e) => setManualStoreName(e.target.value)}
-            placeholder="Cth: Warung Nasi Padang Pasirian..."
+            placeholder="Cth: Indomaret Pasirian / Toko Kelontong..."
             className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
-        {/* PETA DUA PIN (A & B) */}
+        {/* PETA */}
         <div className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex gap-2">
             <button
@@ -336,7 +335,7 @@ export default function GaskeFoodPage() {
                 activePinMode === 'STORE' ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-slate-100 text-slate-600'
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Toko/Warung (A)
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Toko (A)
             </button>
             <button
               type="button"
@@ -388,12 +387,12 @@ export default function GaskeFoodPage() {
 
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Makanan Anda:
+            <Edit3 className="w-4 h-4 text-emerald-600" /> Daftar Belanjaan:
           </label>
           <textarea
             value={customOrder}
             onChange={(e) => setCustomOrder(e.target.value)}
-            placeholder="Cth: Nasi Goreng Pedas (2 porsi), Es Teh Manis (2 gelas)"
+            placeholder="Cth: Air Mineral Aqua 1.5L (2 botol), Indomie Goreng (5 bungkus)"
             rows={4}
             className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500 resize-none"
           />
