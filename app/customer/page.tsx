@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import Notification from '@/components/Notification';
-import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User } from 'lucide-react';
+import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User, MessageSquare } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
 interface Order {
@@ -344,6 +344,28 @@ export default function CustomerDashboard() {
               <p className="text-[11px] text-slate-400 font-medium mt-1">Belanja Minimarket</p>
             </Link>
           </div>
+        </div>
+
+        {/* Kotak Kritik & Saran */}
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 rounded-3xl text-white shadow-xl space-y-3 border border-emerald-500/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+              <MessageSquare className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider">Punya Kritik & Saran?</h3>
+              <p className="text-[11px] text-emerald-100 mt-0.5">Bantu kami meningkatkan layanan GASKE agar lebih baik!</p>
+            </div>
+          </div>
+          
+          <a
+            href="https://wa.me/6285803004649?text=Halo%20Admin%20Gaske,%20saya%20ingin%20memberikan%20kritik%20dan%20saran%20untuk%20aplikasi:%0A%0A[Tulis%20kritik/saran%20Anda%20di%20sini]"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-3 bg-white hover:bg-emerald-50 text-emerald-800 font-black text-xs rounded-2xl text-center shadow-lg transition"
+          >
+            Kirim Kritik & Saran via WhatsApp
+          </a>
         </div>
 
         <div className="bg-gradient-to-r from-slate-800 to-slate-800/60 p-4 rounded-2xl border border-slate-700/50 flex items-center gap-3.5">
