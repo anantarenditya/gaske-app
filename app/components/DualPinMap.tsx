@@ -63,9 +63,10 @@ export default function DualPinMap({
   return (
     <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner">
       <MapContainer center={[center.lat, center.lng]} zoom={14} className="w-full h-full">
+        {/* Lapisan peta standar dengan detail nama jalan dan wilayah terlengkap */}
         <TileLayer
-          attribution='&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, increment P Corp.'
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Marker position={[storeCoords.lat, storeCoords.lng]} icon={storeIcon} />
         <Marker position={[customerCoords.lat, customerCoords.lng]} icon={houseIcon} />
