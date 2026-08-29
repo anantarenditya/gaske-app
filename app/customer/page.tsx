@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import Notification from '@/components/Notification';
-import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User, MessageSquare, RefreshCw } from 'lucide-react';
+import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User, MessageSquare, RefreshCw, XCircle } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
 interface Order {
@@ -26,6 +26,7 @@ export default function CustomerDashboard() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [cancelling, setCancelling] = useState(false); // State untuk loading pembatalan
   const [driverPhone, setDriverPhone] = useState<string>('');
 
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -148,6 +149,28 @@ export default function CustomerDashboard() {
     }, 500);
   };
 
+  // FUNGSI UNTUK MEMBATALKAN PESANAN
+  const handleCancelOrder = async () => {
+    if (!activeOrder) return;
+    
+    const confirmCancel = window.confirm("Apakah Anda yakin ingin membatalkan pesanan ini?");
+    if (!confirmCancel) return;
+
+    setCancelling(true);
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'CANCELLED' })
+      .eq('id', activeOrder.id);
+
+    if (error) {
+      showNotification('Gagal', 'Pesanan gagal dibatalkan: ' + error.message, 'warning');
+    } else {
+      showNotification('Dibatalkan', 'Pesanan Anda telah berhasil dibatalkan.', 'success');
+      setActiveOrder(null);
+    }
+    setCancelling(false);
+  };
+
   const handleSubmitRating = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!completedOrderId) return;
@@ -242,7 +265,7 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* HEADER BARU: TOMBOL HISTORY, PROFILE, LOGOUT DI BAWAH TULISAN GASKE DAN ADA TOMBOL REFRESH */}
+      {/* HEADER */}
       <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="max-w-md mx-auto relative z-10 space-y-4">
@@ -268,7 +291,6 @@ export default function CustomerDashboard() {
             </button>
           </div>
 
-          {/* Tombol History, Profil, dan Log Out dipindah ke bawah tulisan GASKE */}
           <div className="flex items-center gap-2 pt-2 border-t border-white/15">
             <Link href="/customer/history" className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-xl transition shadow-md text-white flex items-center justify-center gap-2 text-xs font-bold">
               <History className="w-4 h-4" /> Riwayat
@@ -336,6 +358,17 @@ export default function CustomerDashboard() {
                   📞 WhatsApp Driver
                 </a>
               </div>
+
+              {/* TOMBOL BATALKAN PESANAN (Hanya saat Mencari Driver) */}
+              {activeOrder.status === 'SEARCHING_DRIVER' && (
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                  className="w-full mt-2 py-3 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2"
+                >
+                  {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <><XCircle className="w-4 h-4" /> Batalkan Pesanan Ini</>}
+                </button>
+              )}
             </div>
           </div>
         ) : null}
