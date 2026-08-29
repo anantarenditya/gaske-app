@@ -34,9 +34,13 @@ export default function DriverDashboard() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // State untuk dompet
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(true); // <-- Indikator loading dompet ditambahkan
+  
   const [customerPhone, setCustomerPhone] = useState<string>('');
 
   // State untuk Toast Notification Dalam Aplikasi
@@ -91,11 +95,14 @@ export default function DriverDashboard() {
           setTotalEarnings(total);
           setCompletedCount(completedData.length);
 
-          const todayStr = new Date().toISOString().split('T')[0];
+          // Perbaikan filter hari ini (disesuaikan dengan zona waktu lokal perangkat)
+          const todayDateStr = new Date().toLocaleDateString('id-ID');
           const todaySum = completedData
-            .filter((o) => o.created_at.startsWith(todayStr))
+            .filter((o) => new Date(o.created_at).toLocaleDateString('id-ID') === todayDateStr)
             .reduce((acc, curr) => acc + (curr.final_price || 0), 0);
+            
           setTodayEarnings(todaySum);
+          setIsLoadingStats(false); // Mematikan efek loading setelah data didapat
         }
 
         if (isMounted) {
@@ -263,7 +270,6 @@ export default function DriverDashboard() {
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
       
-      {/* PANGGIL KOMPONEN DENGAN NAMA BARU */}
       <ToastNotification 
         show={notif.show} 
         title={notif.title} 
@@ -315,7 +321,14 @@ export default function DriverDashboard() {
               </div>
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Dompet Driver</h3>
-                <p className="text-sm font-black text-white">{formatRupiah(totalEarnings)}</p>
+                {isLoadingStats ? (
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+                    <span className="text-xs font-semibold text-slate-500">Memuat...</span>
+                  </div>
+                ) : (
+                  <p className="text-sm font-black text-white">{formatRupiah(totalEarnings)}</p>
+                )}
               </div>
             </div>
             <Link href="/driver/orders/history" className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1">
@@ -326,11 +339,19 @@ export default function DriverDashboard() {
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700/60">
             <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/40">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Pendapatan Hari Ini</p>
-              <p className="text-sm font-black text-emerald-400 mt-1">{formatRupiah(todayEarnings)}</p>
+              {isLoadingStats ? (
+                 <Loader2 className="w-4 h-4 animate-spin text-emerald-500/50 mt-1" />
+              ) : (
+                 <p className="text-sm font-black text-emerald-400 mt-1">{formatRupiah(todayEarnings)}</p>
+              )}
             </div>
             <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/40">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Order Selesai</p>
-              <p className="text-sm font-black text-white mt-1">{completedCount} Tugas</p>
+              {isLoadingStats ? (
+                 <Loader2 className="w-4 h-4 animate-spin text-slate-500 mt-1" />
+              ) : (
+                 <p className="text-sm font-black text-white mt-1">{completedCount} Tugas</p>
+              )}
             </div>
           </div>
         </div>
