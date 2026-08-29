@@ -26,8 +26,8 @@ export default function CustomerDashboard() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [cancelling, setCancelling] = useState(false); // State untuk loading pembatalan
-  const [driverPhone, setDriverPhone] = useState<string>('');
+  const [cancelling, setCancelling] = useState(false);
+  const [driverPhone, setDriverPhone] = useState<string>(''); // State untuk menyimpan nomor WA driver yang mengambil order
 
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
@@ -36,7 +36,6 @@ export default function CustomerDashboard() {
   const [review, setReview] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
 
-  // State untuk Toast Notification Kustomer
   const [notif, setNotif] = useState({
     show: false,
     title: '',
@@ -71,22 +70,25 @@ export default function CustomerDashboard() {
       setActiveOrder(activeData as Order);
       setShowRatingModal(false);
 
+      // JIKA DRIVER SUDAH MENERIMA ORDERAN, AMBIL NOMOR HP DRIVER TERSEBUT
       if (activeData.driver_id) {
-        const { data: profileData } = await supabase
+        const { data: driverProfile } = await supabase
           .from('profiles')
           .select('phone_number')
           .eq('id', activeData.driver_id)
           .single();
 
-        if (profileData?.phone_number) {
-          let phoneNum = profileData.phone_number.trim();
-          if (phoneNum.startsWith('0')) {
-            phoneNum = '62' + phoneNum.slice(1);
+        if (driverProfile?.phone_number) {
+          let cleaned = driverProfile.phone_number.replace(/\D/g, '');
+          if (cleaned.startsWith('0')) {
+            cleaned = '62' + cleaned.substring(1);
           }
-          setDriverPhone(phoneNum);
+          setDriverPhone(cleaned);
         } else {
           setDriverPhone('');
         }
+      } else {
+        setDriverPhone('');
       }
 
       setLoading(false);
@@ -149,7 +151,6 @@ export default function CustomerDashboard() {
     }, 500);
   };
 
-  // FUNGSI UNTUK MEMBATALKAN PESANAN
   const handleCancelOrder = async () => {
     if (!activeOrder) return;
     
@@ -207,10 +208,19 @@ export default function CustomerDashboard() {
     }
   };
 
+  // Link WhatsApp Admin (Tetap ke nomor admin 085803004649)
+  const adminWaLink = activeOrder 
+    ? `https://wa.me/6285803004649?text=${encodeURIComponent(`Halo Admin GASKE, saya ingin menanyakan status pesanan saya dengan Resi: ${activeOrder.order_number || activeOrder.id?.slice(0, 8)}`)}` 
+    : '#';
+
+  // Link WhatsApp Driver (Otomatis ke nomor driver yang mengambil orderan jika sudah ada, jika belum diarahkan ke nomor kosong / placeholder)
+  const driverWaLink = driverPhone 
+    ? `https://wa.me/${driverPhone}?text=${encodeURIComponent(`Halo Driver GASKE, saya pemesan layanan ${activeOrder?.service} (Resi: ${activeOrder?.order_number || activeOrder?.id?.slice(0, 8)}). Apakah sudah dekat?`)}` 
+    : '#';
+
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
       
-      {/* KONTROL KOMPONEN NOTIFIKASI MELAYANG */}
       <Notification 
         show={notif.show} 
         title={notif.title} 
@@ -265,7 +275,6 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* HEADER */}
       <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="max-w-md mx-auto relative z-10 space-y-4">
@@ -280,7 +289,6 @@ export default function CustomerDashboard() {
               </div>
             </div>
 
-            {/* Tombol Refresh di pojok kanan atas */}
             <button 
               onClick={handleManualRefresh} 
               disabled={isRefreshing}
@@ -328,38 +336,38 @@ export default function CustomerDashboard() {
                 <p className="text-slate-300 line-clamp-1"><strong className="text-slate-400">Tujuan:</strong> {activeOrder.destination_address.split('| Rincian:')[0]}</p>
               </div>
 
-              {activeOrder.status !== 'SEARCHING_DRIVER' && driverPhone ? (
-                <a
-                  href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
-                >
-                  <MessageCircle className="w-4 h-4" /> Hubungi Driver via WhatsApp
-                </a>
-              ) : null}
-
-              {/* Tombol Bantuan WhatsApp Admin & Driver */}
+              {/* TOMBOL BANTUAN WHATSAPP ADMIN & DRIVER DINAMIS */}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/60">
                 <a
-                  href={`https://wa.me/6285803004649?text=${encodeURIComponent(`Halo Admin GASKE, saya ingin menanyakan status pesanan saya dengan Resi: ${activeOrder.order_number || activeOrder.id?.slice(0, 8)}`)}`}
+                  href={adminWaLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-slate-700/60 hover:bg-slate-700 text-emerald-400 border border-slate-600/60 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition text-center shadow-sm"
                 >
                   💬 WhatsApp Admin
                 </a>
-                <a
-                  href={`https://wa.me/6287792198678?text=${encodeURIComponent(`Halo Driver GASKE, saya konfirmasi untuk pesanan saya (Resi: ${activeOrder.order_number || activeOrder.id?.slice(0, 8)})`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition text-center shadow-sm"
-                >
-                  📞 WhatsApp Driver
-                </a>
+
+                {driverPhone ? (
+                  <a
+                    href={driverWaLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                  >
+                    📞 WhatsApp Driver
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="bg-slate-800 text-slate-500 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 cursor-not-allowed text-center"
+                    title="Menunggu driver mengambil orderan"
+                  >
+                    ⏳ Driver Belum Ada
+                  </button>
+                )}
               </div>
 
-              {/* TOMBOL BATALKAN PESANAN (Hanya saat Mencari Driver) */}
+              {/* TOMBOL BATALKAN PESANAN */}
               {activeOrder.status === 'SEARCHING_DRIVER' && (
                 <button
                   onClick={handleCancelOrder}
