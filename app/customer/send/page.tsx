@@ -89,12 +89,11 @@ export default function SendPage() {
     return Math.max(1, Math.round(R * c));
   };
 
-  // --- FUNGSI MENGUBAH TITIK PETA MENJADI NAMA TEMPAT / JALAN ASLI ---
   const fetchAddressName = async (lat: number, lng: number) => {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
         headers: {
-          'Accept-Language': 'id' // Memaksa hasil pencarian dalam Bahasa Indonesia
+          'Accept-Language': 'id'
         }
       });
       const data = await res.json();
@@ -242,7 +241,7 @@ export default function SendPage() {
     }
   };
 
- const executeOrder = async (method: 'Tunai (Cash)' | 'QRIS') => {
+  const executeOrder = async (method: 'Tunai (Cash)' | 'QRIS') => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -268,8 +267,8 @@ export default function SendPage() {
       payment_method: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
       pickup_lat: pickupCoords.lat,
       pickup_lng: pickupCoords.lng,
-      destination_lat: destCoords.lat,
-      destination_lng: destCoords.lng,
+      destination_lat: destCoords.lat,     // DIPERBAIKI (bukan dest_lat)
+      destination_lng: destCoords.lng,     // DIPERBAIKI (bukan dest_lng)
     });
 
     if (error) { alert('Gagal: ' + error.message); setLoading(false); }

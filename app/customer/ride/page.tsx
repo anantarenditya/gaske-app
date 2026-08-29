@@ -240,12 +240,10 @@ export default function RidePage() {
       estimated_price: price,
       final_price: price,
       payment_method: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
-      
-      // TAMBAHAN 4 BARIS KOORDINAT
       pickup_lat: pickupCoords.lat,
       pickup_lng: pickupCoords.lng,
-      dest_lat: destCoords.lat,
-      dest_lng: destCoords.lng,
+      destination_lat: destCoords.lat,     // DIPERBAIKI (bukan dest_lat)
+      destination_lng: destCoords.lng,     // DIPERBAIKI (bukan dest_lng)
     });
 
     if (error) {
