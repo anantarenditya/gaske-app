@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2 } from 'lucide-react'; // Tambah MessageSquare
+import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -43,7 +43,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
     }
 
     fetchOrderDetails();
-  }, [orderId]);
+  }, [orderId, supabase]);
 
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return '';
@@ -56,14 +56,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
       </div>
     );
   }
 
   if (!order) {
-    return <div className="p-8 text-center">Pesanan tidak ditemukan.</div>;
+    return <div className="min-h-screen bg-slate-900 p-8 text-center text-slate-100 flex items-center justify-center font-bold">Pesanan tidak ditemukan.</div>;
   }
 
   const waNumber = formatWhatsAppNumber(driverPhone);
@@ -71,47 +71,45 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : '#';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-slate-900 p-4 md:p-8 font-sans text-slate-100">
       <div className="max-w-xl mx-auto space-y-6">
-        <Link href="/" className="flex items-center gap-2 text-emerald-600 font-bold hover:underline mb-6">
+        <Link href="/" className="flex items-center gap-2 text-blue-400 font-bold hover:underline mb-6">
           <ArrowLeft className="w-5 h-5" /> Kembali
         </Link>
 
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-          <h2 className="text-xl font-black text-slate-900 mb-1">Status Pesanan</h2>
-          <p className="text-sm font-medium text-emerald-600 mb-6">Nomor Resi: {order.order_number}</p>
+        <div className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl">
+          <h2 className="text-xl font-black text-white mb-1">Status Pesanan</h2>
+          <p className="text-sm font-medium text-blue-400 mb-6">Nomor Resi: {order.order_number}</p>
 
-          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl mb-6">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-4 bg-slate-900/60 p-4 rounded-2xl mb-6 border border-slate-700/50">
+            <div className="w-12 h-12 bg-blue-500/10 text-blue-400 border border-blue-500/25 rounded-full flex items-center justify-center">
               <Bike className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900">{order.driver_name || 'Mencari Driver...'}</h4>
-              <p className="text-xs text-slate-500 font-medium">{driverPhone ? driverPhone : 'Belum ada nomor driver'}</p>
+              <h4 className="font-bold text-white">{order.driver_name || 'Mencari Driver...'}</h4>
+              <p className="text-xs text-slate-400 font-medium">{driverPhone ? driverPhone : 'Belum ada nomor driver'}</p>
             </div>
           </div>
 
           <div className="space-y-3">
-            {/* Tombol In-App Chat Baru */}
             <Link
               href={`/customer/chat/${orderId}`}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-md"
+              className="w-full bg-slate-900 hover:bg-slate-950 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-md border border-slate-700 text-xs"
             >
-              <MessageSquare className="w-5 h-5" /> Live Chat di Aplikasi
+              <MessageSquare className="w-4 h-4" /> Live Chat di Aplikasi
             </Link>
 
-            {/* Tombol WhatsApp (Tetap ada sebagai cadangan) */}
             {waNumber ? (
               <a
                 href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition"
+                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition text-xs shadow-sm"
               >
-                <MessageCircle className="w-5 h-5" /> Hubungi via WhatsApp
+                <MessageCircle className="w-4 h-4" /> Hubungi via WhatsApp
               </a>
             ) : (
-              <button disabled className="w-full bg-slate-200 text-slate-400 font-bold py-3.5 rounded-xl cursor-not-allowed">
+              <button disabled className="w-full bg-slate-800 text-slate-500 font-bold py-3.5 rounded-xl cursor-not-allowed text-xs border border-slate-700">
                 WhatsApp Driver Belum Tersedia
               </button>
             )}

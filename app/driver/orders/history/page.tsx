@@ -67,17 +67,17 @@ export default function DriverHistoryPage() {
           </button>
           <div>
             <h1 className="text-sm font-black text-white tracking-tight leading-none">RIWAYAT PENGERJAAN</h1>
-            <p className="text-[10px] text-emerald-400 font-semibold mt-1">Rekapitulasi tugas driver selesai</p>
+            <p className="text-[10px] text-blue-400 font-semibold mt-1">Rekapitulasi tugas driver selesai</p>
           </div>
         </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-5 space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-3xl shadow-xl border border-emerald-500/30 text-white">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Total Pendapatan</p>
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 rounded-3xl shadow-xl border border-blue-500/30 text-white">
+            <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">Total Pendapatan</p>
             <h2 className="text-lg font-black mt-1">{formatRupiah(totalEarnings)}</h2>
-            <p className="text-[10px] text-emerald-100/80 mt-0.5">{historyList.length} Orderan selesai</p>
+            <p className="text-[10px] text-blue-100/80 mt-0.5">{historyList.length} Orderan selesai</p>
           </div>
 
           <div className="bg-slate-800/90 backdrop-blur-xl p-4 rounded-3xl shadow-xl border border-slate-700/60 text-white flex flex-col justify-between">
@@ -92,7 +92,7 @@ export default function DriverHistoryPage() {
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
           </div>
         ) : historyList.length === 0 ? (
           <div className="bg-slate-800/80 backdrop-blur-xl p-10 rounded-3xl text-center border border-slate-700/60 space-y-3">
@@ -104,13 +104,13 @@ export default function DriverHistoryPage() {
             <Link
               key={item.id}
               href={`/driver/orders/${item.id}`}
-              className="block bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3 hover:border-emerald-500/50 transition cursor-pointer"
+              className="block bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3 hover:border-blue-500/50 transition cursor-pointer"
             >
               <div className="flex justify-between items-center border-b border-slate-700/60 pb-3">
-                <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg uppercase tracking-wider">
+                <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-lg uppercase tracking-wider">
                   {item.service}
                 </span>
-                <span className="text-sm font-black text-emerald-400">+{formatRupiah(item.final_price)}</span>
+                <span className="text-sm font-black text-blue-400">+{formatRupiah(item.final_price)}</span>
               </div>
 
               <div className="space-y-1.5 text-xs text-slate-300">
@@ -129,7 +129,7 @@ export default function DriverHistoryPage() {
                         />
                       ))}
                     </div>
-                    <span className="text-[10px] text-emerald-400 font-bold">Ulasan Pelanggan</span>
+                    <span className="text-[10px] text-blue-400 font-bold">Ulasan Pelanggan</span>
                   </div>
                   {item.review && (
                     <p className="text-[11px] text-slate-300 italic">"{item.review}"</p>
@@ -143,7 +143,7 @@ export default function DriverHistoryPage() {
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" /> {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                <span className="flex items-center gap-1 text-blue-400 font-bold">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                 </span>
               </div>
