@@ -13,16 +13,19 @@ export interface CreateOrderInput {
   pickupLng?: number;
   destinationLat?: number;
   destinationLng?: number;
-  customFare?: number; // <-- Parameter baru untuk menerima harga pasti dari frontend
+  customFare?: number;
 }
 
 export async function calculateFareAction(service: ServiceType, distanceKm: number) {
   const supabase = await createClient();
 
+  // Jika layanan adalah SEND, arahkan agar menggunakan aturan harga yang sama dengan RIDE
+  const targetService = service === 'SEND' ? 'RIDE' : service;
+
   const { data: rule, error } = await supabase
     .from('pricing_rules')
     .select('*')
-    .eq('service', service)
+    .eq('service', targetService)
     .maybeSingle();
 
   if (error || !rule) {
@@ -66,7 +69,6 @@ export async function createOrderAction(input: CreateOrderInput) {
     .eq('id', user.id)
     .maybeSingle();
 
-  // JIKA CUSTOMFARE DISEDIAKAN, GUNAKAN ITU. JIKA TIDAK, HITUNG DARI DATABASE.
   const fare = input.customFare !== undefined 
     ? input.customFare 
     : (await calculateFareAction(input.service, input.distanceKm)).fare;
