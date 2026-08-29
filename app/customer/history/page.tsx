@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
 import { ArrowLeft, History, Loader2, Calendar, Star } from 'lucide-react';
@@ -73,7 +74,11 @@ export default function CustomerHistoryPage() {
           </div>
         ) : (
           historyList.map((item) => (
-            <div key={item.id} className="bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
+            <Link
+              key={item.id}
+              href={`/customer/orders/${item.id}`}
+              className="block bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3 hover:border-emerald-500/50 transition cursor-pointer"
+            >
               <div className="flex justify-between items-center border-b border-slate-700/60 pb-3">
                 <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg uppercase tracking-wider">
                   {item.service}
@@ -86,7 +91,6 @@ export default function CustomerHistoryPage() {
                 <p className="line-clamp-1"><strong className="text-slate-400">Tujuan:</strong> {item.destination_address.split('| Rincian:')[0]}</p>
               </div>
 
-              {/* TAMPILAN RATING & ULASAN DI CUSTOMER */}
               {item.rating && (
                 <div className="p-3 bg-slate-900/60 rounded-2xl border border-slate-700/40 space-y-1.5">
                   <div className="flex items-center gap-1">
@@ -112,7 +116,7 @@ export default function CustomerHistoryPage() {
                   {item.status}
                 </span>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </main>

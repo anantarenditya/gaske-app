@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
-import { ArrowLeft, History, Loader2, CheckCircle2, Wallet, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, History, Loader2, CheckCircle2, Star, Calendar } from 'lucide-react';
 
 interface DriverHistoryItem {
   id: string;
@@ -45,7 +46,6 @@ export default function DriverHistoryPage() {
         const sum = data.reduce((acc, curr) => acc + (curr.final_price || 0), 0);
         setTotalEarnings(sum);
 
-        // Hitung rata-rata rating
         const ratedOrders = data.filter((o) => o.rating);
         if (ratedOrders.length > 0) {
           const totalRating = ratedOrders.reduce((acc, curr) => acc + (curr.rating || 0), 0);
@@ -73,7 +73,6 @@ export default function DriverHistoryPage() {
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-5 space-y-4">
-        {/* Ringkasan Pendapatan & Rating Rata-Rata */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-3xl shadow-xl border border-emerald-500/30 text-white">
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Total Pendapatan</p>
@@ -102,7 +101,11 @@ export default function DriverHistoryPage() {
           </div>
         ) : (
           historyList.map((item) => (
-            <div key={item.id} className="bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
+            <Link
+              key={item.id}
+              href={`/driver/orders/${item.id}`}
+              className="block bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3 hover:border-emerald-500/50 transition cursor-pointer"
+            >
               <div className="flex justify-between items-center border-b border-slate-700/60 pb-3">
                 <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg uppercase tracking-wider">
                   {item.service}
@@ -115,7 +118,6 @@ export default function DriverHistoryPage() {
                 <p className="line-clamp-1"><strong className="text-slate-400">Tujuan:</strong> {item.destination_address.split('| Rincian:')[0]}</p>
               </div>
 
-              {/* TAMPILAN RATING & ULASAN DI DRIVER */}
               {item.rating ? (
                 <div className="p-3 bg-slate-900/60 rounded-2xl border border-slate-700/40 space-y-1.5">
                   <div className="flex items-center justify-between">
@@ -145,7 +147,7 @@ export default function DriverHistoryPage() {
                   <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                 </span>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </main>
