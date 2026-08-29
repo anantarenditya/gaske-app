@@ -39,7 +39,7 @@ export default function DriverDashboard() {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
-  const [isLoadingStats, setIsLoadingStats] = useState(true); // <-- Indikator loading dompet ditambahkan
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   
   const [customerPhone, setCustomerPhone] = useState<string>('');
 
@@ -95,14 +95,13 @@ export default function DriverDashboard() {
           setTotalEarnings(total);
           setCompletedCount(completedData.length);
 
-          // Perbaikan filter hari ini (disesuaikan dengan zona waktu lokal perangkat)
           const todayDateStr = new Date().toLocaleDateString('id-ID');
           const todaySum = completedData
             .filter((o) => new Date(o.created_at).toLocaleDateString('id-ID') === todayDateStr)
             .reduce((acc, curr) => acc + (curr.final_price || 0), 0);
             
           setTodayEarnings(todaySum);
-          setIsLoadingStats(false); // Mematikan efek loading setelah data didapat
+          setIsLoadingStats(false);
         }
 
         if (isMounted) {
@@ -152,11 +151,9 @@ export default function DriverDashboard() {
           const newOrder = payload.new as Order;
           if (newOrder.status === 'SEARCHING_DRIVER' && isOnline) {
             
-            // 1. Notifikasi Dalam Website
             playNotificationSound();
             showNotification('Orderan Baru Masuk!', `Ada pesanan ${newOrder.service} di sekitar Anda.`, 'info');
 
-            // 2. Notifikasi Sistem (Luar Website)
             if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted') {
               const systemNotif = new window.Notification('🚨 GASKE: ORDERAN BARU!', {
                 body: `Layanan: ${newOrder.service}\nJemput: ${newOrder.pickup_address}`,
@@ -280,31 +277,36 @@ export default function DriverDashboard() {
 
       <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="max-w-md mx-auto flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-950/60 border border-white/30">
-              <span className="text-white font-black text-2xl tracking-tighter">G</span>
+        <div className="max-w-md mx-auto relative z-10 space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-950/60 border border-white/30">
+                <span className="text-white font-black text-2xl tracking-tighter">G</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-[0.18em] text-white font-sans">GASKE</h1>
+                <p className="text-[11px] text-emerald-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-[0.18em] text-white font-sans">GASKE</h1>
-              <p className="text-[11px] text-emerald-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
-            </div>
+
+            <button 
+              onClick={() => window.location.reload()} 
+              title="Refresh" 
+              className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white flex items-center gap-1.5 text-xs font-bold"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href="/driver/orders/history" title="Riwayat & Dompet" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
-              <History className="w-5 h-5" />
+          <div className="flex items-center gap-2 pt-2 border-t border-white/15">
+            <Link href="/driver/orders/history" className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-xl transition shadow-md text-white flex items-center justify-center gap-2 text-xs font-bold">
+              <History className="w-4 h-4" /> Riwayat
             </Link>
-            
-            <Link href="/driver/profile" title="Profil Saya" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
-              <User className="w-5 h-5" />
+            <Link href="/driver/profile" className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-xl transition shadow-md text-white flex items-center justify-center gap-2 text-xs font-bold">
+              <User className="w-4 h-4" /> Profil
             </Link>
-
-            <button onClick={() => window.location.reload()} title="Refresh" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
-              <RefreshCw className="w-5 h-5" />
-            </button>
-            <button onClick={handleLogout} title="Keluar" className="p-2.5 bg-rose-500/20 hover:bg-rose-500/30 backdrop-blur-md border border-rose-500/30 rounded-2xl transition shadow-lg text-rose-300">
-              <LogOut className="w-5 h-5" />
+            <button onClick={handleLogout} className="py-2 px-3 bg-rose-500/20 hover:bg-rose-500/35 backdrop-blur-md border border-rose-500/30 rounded-xl transition shadow-md text-rose-200 flex items-center justify-center gap-1 text-xs font-bold">
+              <LogOut className="w-4 h-4" /> Keluar
             </button>
           </div>
         </div>
