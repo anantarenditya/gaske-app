@@ -35,7 +35,6 @@ export default function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // State untuk dompet
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -43,7 +42,6 @@ export default function DriverDashboard() {
   
   const [customerPhone, setCustomerPhone] = useState<string>('');
 
-  // State untuk Toast Notification Dalam Aplikasi
   const [notif, setNotif] = useState({
     show: false,
     title: '',
@@ -62,7 +60,6 @@ export default function DriverDashboard() {
     let isMounted = true;
     let pollInterval: NodeJS.Timeout;
 
-    // 1. Minta Izin Notifikasi Sistem (Browser)
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (window.Notification.permission === 'default') {
         window.Notification.requestPermission();
@@ -72,7 +69,7 @@ export default function DriverDashboard() {
     async function loadDriverState() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        if (isMounted) router.push('/login');
+        if (isMounted) router.push('/driver/login');
         return;
       }
 
@@ -150,7 +147,6 @@ export default function DriverDashboard() {
         (payload) => {
           const newOrder = payload.new as Order;
           if (newOrder.status === 'SEARCHING_DRIVER' && isOnline) {
-            
             playNotificationSound();
             showNotification('Orderan Baru Masuk!', `Ada pesanan ${newOrder.service} di sekitar Anda.`, 'info');
 
@@ -232,13 +228,12 @@ export default function DriverDashboard() {
         setActiveOrder({ ...activeOrder, status: nextStatus });
       }
     }
-    
     setLoading(false);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push('/driver/login');
   };
 
   const getWhatsAppLink = () => {
@@ -266,7 +261,6 @@ export default function DriverDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
-      
       <ToastNotification 
         show={notif.show} 
         title={notif.title} 
@@ -313,8 +307,6 @@ export default function DriverDashboard() {
       </header>
 
       <main className="max-w-md mx-auto px-4 -mt-8 space-y-4 relative z-20">
-        
-        {/* WIDGET DOMPET */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/80 shadow-2xl space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -358,7 +350,6 @@ export default function DriverDashboard() {
           </div>
         </div>
 
-        {/* Profil Driver */}
         <div className="bg-slate-800/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700/60 shadow-xl flex items-center gap-3.5">
           <div className="w-12 h-12 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner">
             D
@@ -369,7 +360,6 @@ export default function DriverDashboard() {
           </div>
         </div>
 
-        {/* Status Toggle Card */}
         <div className="bg-slate-800/90 backdrop-blur-xl p-4.5 rounded-3xl border border-slate-700/60 shadow-xl flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <div className={`w-3.5 h-3.5 rounded-full ${isOnline ? 'bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse' : 'bg-slate-500'}`}></div>
@@ -389,7 +379,6 @@ export default function DriverDashboard() {
           </button>
         </div>
 
-        {/* Card Orderan Aktif */}
         {activeOrder ? (
           <div className="bg-slate-800/95 backdrop-blur-xl p-6 rounded-3xl border-2 border-blue-500 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-3.5 border-b border-slate-700/60">
@@ -400,8 +389,6 @@ export default function DriverDashboard() {
             </div>
 
             <div className="space-y-4 text-xs">
-              
-              {/* ALAMAT JEMPUT (TITIK A) */}
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl shrink-0 mt-0.5">
                   <MapPin className="w-4 h-4" />
@@ -410,7 +397,6 @@ export default function DriverDashboard() {
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">LOKASI AMBIL / JEMPUT (A)</p>
                   <p className="font-bold text-white mt-0.5 mb-2">{activeOrder.pickup_address}</p>
                   
-                  {/* TOMBOL GOOGLE MAPS TITIK A */}
                   {activeOrder.pickup_lat && activeOrder.pickup_lng && (
                     <button 
                       onClick={() => openGoogleMaps(activeOrder.pickup_lat as number, activeOrder.pickup_lng as number)}
@@ -422,7 +408,6 @@ export default function DriverDashboard() {
                 </div>
               </div>
 
-              {/* ALAMAT TUJUAN (TITIK B) */}
               <div className="flex items-start gap-3 pt-4 border-t border-slate-700/60">
                 <div className="p-2 bg-rose-500/10 text-rose-400 rounded-xl shrink-0 mt-0.5">
                   <Navigation className="w-4 h-4" />
@@ -436,7 +421,6 @@ export default function DriverDashboard() {
                     }
                   </p>
                   
-                  {/* TOMBOL GOOGLE MAPS TITIK B */}
                   {activeOrder.destination_lat && activeOrder.destination_lng && (
                     <button 
                       onClick={() => openGoogleMaps(activeOrder.destination_lat as number, activeOrder.destination_lng as number)}
