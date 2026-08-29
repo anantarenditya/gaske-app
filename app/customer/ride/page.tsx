@@ -44,21 +44,25 @@ export default function GaskeRidePage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // Parsing alamat OSM yang lengkap (Nama Jalan + Wilayah / Kelurahan + Kota)
+  // Parsing alamat cerdas: Prioritaskan nama POI (Rumah Sakit, Sekolah, Gacoan, dll) jika ada di titik tersebut
   const parseOsmAddress = (data: any) => {
     if (!data || !data.address) return data?.display_name || '';
     const addr = data.address;
     
+    const poiName = data.name || '';
     const road = addr.road || addr.pedestrian || addr.footway || '';
     const specific = addr.hamlet || addr.suburb || addr.neighbourhood || addr.village || '';
     const district = addr.city_district || addr.town || addr.subdistrict || '';
     const city = addr.city || addr.county || addr.state || '';
 
     let parts = [];
+    if (poiName && poiName !== road) {
+      parts.push(poiName);
+    }
     if (road) parts.push(road);
-    if (specific && specific !== road) parts.push(specific);
-    if (district && district !== specific) parts.push(district);
-    if (city && city !== district) parts.push(city);
+    if (specific && specific !== road && specific !== poiName) parts.push(specific);
+    if (district && district !== specific && district !== poiName) parts.push(district);
+    if (city && city !== district && city !== poiName) parts.push(city);
 
     if (parts.length > 0) {
       return parts.join(', ');
