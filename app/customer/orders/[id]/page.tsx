@@ -97,7 +97,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   }
 
   if (!order) {
-    return <div className="p-8 text-center text-slate-800">Pesanan tidak ditemukan.</div>;
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center text-slate-800 space-y-4">
+        <p className="font-bold text-lg">Pesanan tidak ditemukan.</p>
+        <Link href="/customer/history" className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold">
+          Kembali ke Riwayat
+        </Link>
+      </div>
+    );
   }
 
   const waNumber = formatWhatsAppNumber(driverPhone);
@@ -107,7 +114,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
       <div className="max-w-xl mx-auto space-y-6">
-        <Link href="/customer/orders/history" className="flex items-center gap-2 text-emerald-600 font-bold hover:underline mb-2">
+        <Link href="/customer/history" className="flex items-center gap-2 text-emerald-600 font-bold hover:underline mb-2">
           <ArrowLeft className="w-5 h-5" /> Kembali ke Riwayat
         </Link>
 
