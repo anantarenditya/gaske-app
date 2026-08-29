@@ -1,14 +1,15 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation'; // DIPERBAIKI: Menggunakan useParams
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { MessageCircle, MessageSquare, MapPin, ArrowLeft, CheckCircle, Loader2, Navigation, Map } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
-export default function DriverOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
-  const orderId = unwrappedParams.id;
+export default function DriverOrderDetailPage() {
+  const params = useParams();
+  const orderId = params.id as string; // DIPERBAIKI: Cara baca ID paling aman
 
   const [order, setOrder] = useState<any>(null);
   const [customerPhone, setCustomerPhone] = useState<string>('');
@@ -18,11 +19,17 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
 
   useEffect(() => {
     async function fetchOrderDetails() {
-      const { data: orderData } = await supabase
+      if (!orderId) return; // Cegah error jika ID kosong
+
+      const { data: orderData, error } = await supabase
         .from('orders')
         .select('*')
         .eq('id', orderId)
         .single();
+
+      if (error) {
+        console.error("Gagal mengambil data pesanan:", error);
+      }
 
       if (orderData) {
         setOrder(orderData);
@@ -83,7 +90,14 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
   }
 
   if (!order) {
-    return <div className="p-8 text-center text-white">Pesanan tidak ditemukan.</div>;
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center space-y-4 p-8 text-center text-white">
+        <p className="text-lg font-bold text-slate-300">Pesanan tidak ditemukan atau ID salah.</p>
+        <Link href="/driver/orders/history" className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold">
+          Kembali ke Riwayat
+        </Link>
+      </div>
+    );
   }
 
   // Cek apakah pesanan masih aktif atau sudah selesai
@@ -120,7 +134,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* --- ALAMAT JEMPUT (Tombol Maps Titik A) --- */}
+            {/* --- ALAMAT JEMPUT (Hanya tampilkan tombol maps jika status AKTIF) --- */}
             <div className="flex gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 relative">
               <span className="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5 shadow-sm">A</span>
               <div className="flex-1 min-w-0">
@@ -138,7 +152,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* --- ALAMAT TUJUAN (Tombol Maps Titik B) --- */}
+            {/* --- ALAMAT TUJUAN (Hanya tampilkan tombol maps jika status AKTIF) --- */}
             <div className="flex gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 relative">
               <span className="w-6 h-6 rounded-full bg-rose-500 text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5 shadow-sm">B</span>
               <div className="flex-1 min-w-0">
@@ -193,7 +207,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
             )}
           </div>
 
-          {/* Tombol Selesaikan Pesanan */}
+          {/* Tombol Selesaikan Pesanan HANYA MUNCUL JIKA AKTIF */}
           {isActive && (
             <button 
               onClick={handleCompleteOrder}
