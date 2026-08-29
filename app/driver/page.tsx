@@ -6,9 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah } from '@/lib/utils/format';
 import { playNotificationSound } from '@/lib/utils/sound'; 
-// UBAH NAMA IMPORT DISINI AGAR TIDAK BENTROK
 import ToastNotification from '@/components/Notification';
-import { Power, CheckCircle2, MapPin, Navigation, BellRing, Loader2, UserCheck, RefreshCw, Navigation2, History, LogOut, MessageCircle, Wallet, ArrowUpRight, User } from 'lucide-react';
+import { Power, CheckCircle2, MapPin, Navigation, BellRing, Loader2, UserCheck, RefreshCw, Navigation2, History, LogOut, MessageCircle, Wallet, ArrowUpRight, User, Map } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -21,6 +20,10 @@ interface Order {
   created_at: string;
   customer_id?: string;
   customer_phone?: string;
+  pickup_lat?: number;
+  pickup_lng?: number;
+  destination_lat?: number;
+  destination_lng?: number;
 }
 
 export default function DriverDashboard() {
@@ -253,6 +256,10 @@ export default function DriverDashboard() {
     return `https://wa.me/${customerPhone}?text=${encodeURIComponent(text)}`;
   };
 
+  const openGoogleMaps = (lat: number, lng: number) => {
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 pb-28 font-sans text-slate-100 relative">
       
@@ -279,7 +286,7 @@ export default function DriverDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link href="/driver/history" title="Riwayat & Dompet" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
+            <Link href="/driver/orders/history" title="Riwayat & Dompet" className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
               <History className="w-5 h-5" />
             </Link>
             
@@ -311,7 +318,7 @@ export default function DriverDashboard() {
                 <p className="text-sm font-black text-white">{formatRupiah(totalEarnings)}</p>
               </div>
             </div>
-            <Link href="/driver/history" className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1">
+            <Link href="/driver/orders/history" className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1">
               Detail <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -369,29 +376,52 @@ export default function DriverDashboard() {
               <span className="font-black text-white text-lg">{formatRupiah(activeOrder.final_price)}</span>
             </div>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-4 text-xs">
+              
+              {/* ALAMAT JEMPUT (TITIK A) */}
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl shrink-0 mt-0.5">
                   <MapPin className="w-4 h-4" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">LOKASI AMBIL / JEMPUT</p>
-                  <p className="font-bold text-white mt-0.5">{activeOrder.pickup_address}</p>
+                <div className="w-full min-w-0">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">LOKASI AMBIL / JEMPUT (A)</p>
+                  <p className="font-bold text-white mt-0.5 mb-2">{activeOrder.pickup_address}</p>
+                  
+                  {/* TOMBOL GOOGLE MAPS TITIK A */}
+                  {activeOrder.pickup_lat && activeOrder.pickup_lng && (
+                    <button 
+                      onClick={() => openGoogleMaps(activeOrder.pickup_lat as number, activeOrder.pickup_lng as number)}
+                      className="w-full flex items-center justify-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 py-2.5 rounded-xl font-bold text-[11px] transition"
+                    >
+                      <Map className="w-3.5 h-3.5" /> Arahkan ke Titik Jemput (A)
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 pt-3 border-t border-slate-700/60">
+              {/* ALAMAT TUJUAN (TITIK B) */}
+              <div className="flex items-start gap-3 pt-4 border-t border-slate-700/60">
                 <div className="p-2 bg-rose-500/10 text-rose-400 rounded-xl shrink-0 mt-0.5">
                   <Navigation className="w-4 h-4" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TUJUAN PENGANTARAN</p>
-                  <p className="font-bold text-white mt-0.5">
+                <div className="w-full min-w-0">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TUJUAN PENGANTARAN (B)</p>
+                  <p className="font-bold text-white mt-0.5 mb-2">
                     {activeOrder.destination_address.includes('| Rincian:') 
                       ? activeOrder.destination_address.split('| Rincian:')[0]
                       : activeOrder.destination_address
                     }
                   </p>
+                  
+                  {/* TOMBOL GOOGLE MAPS TITIK B */}
+                  {activeOrder.destination_lat && activeOrder.destination_lng && (
+                    <button 
+                      onClick={() => openGoogleMaps(activeOrder.destination_lat as number, activeOrder.destination_lng as number)}
+                      className="w-full flex items-center justify-center gap-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 py-2.5 rounded-xl font-bold text-[11px] transition"
+                    >
+                      <Navigation2 className="w-3.5 h-3.5" /> Arahkan ke Tujuan (B)
+                    </button>
+                  )}
                 </div>
               </div>
 
