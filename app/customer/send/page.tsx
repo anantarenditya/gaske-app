@@ -47,14 +47,26 @@ export default function GaskeSendPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
+  // Parsing alamat OSM yang lengkap (Nama Jalan + Wilayah / Kelurahan + Kota)
   const parseOsmAddress = (data: any) => {
     if (!data || !data.address) return data?.display_name || '';
     const addr = data.address;
-    const specific = addr.hamlet || addr.suburb || addr.neighbourhood || addr.village || addr.road || '';
-    const general = addr.town || addr.city_district || addr.city || addr.state || '';
-    if (specific && general && specific !== general) {
-      return `${specific}, ${general}`;
+    
+    const road = addr.road || addr.pedestrian || addr.footway || '';
+    const specific = addr.hamlet || addr.suburb || addr.neighbourhood || addr.village || '';
+    const district = addr.city_district || addr.town || addr.subdistrict || '';
+    const city = addr.city || addr.county || addr.state || '';
+
+    let parts = [];
+    if (road) parts.push(road);
+    if (specific && specific !== road) parts.push(specific);
+    if (district && district !== specific) parts.push(district);
+    if (city && city !== district) parts.push(city);
+
+    if (parts.length > 0) {
+      return parts.join(', ');
     }
+    
     return data.display_name.split(',').slice(0, 3).join(',').trim();
   };
 
@@ -322,8 +334,8 @@ export default function GaskeSendPage() {
             </button>
           </div>
 
-          <p className="text-[11px] text-center font-semibold text-slate-400">
-            {activePinMode === 'STORE' ? '📍 Ketuk peta untuk memindahkan Pin Hijau (Jemput)' : '📍 Ketuk peta untuk memindahkan Pin Merah (Tujuan)'}
+          <p className="text-[11px] text-center font-semibold text-slate-400 flex items-center justify-center gap-1">
+            📍 {activePinMode === 'STORE' ? 'Ketuk peta untuk memindahkan Pin Hijau (Jemput)' : 'Ketuk peta untuk memindahkan Pin Merah (Tujuan)'}
           </p>
 
           <DualPinMap
