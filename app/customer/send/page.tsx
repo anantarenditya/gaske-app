@@ -242,7 +242,7 @@ export default function SendPage() {
     }
   };
 
-  const executeOrder = async (method: 'Tunai (Cash)' | 'QRIS') => {
+ const executeOrder = async (method: 'Tunai (Cash)' | 'QRIS') => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -266,6 +266,10 @@ export default function SendPage() {
       estimated_price: price,
       final_price: price, 
       payment_method: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
+      pickup_lat: pickupCoords.lat,
+      pickup_lng: pickupCoords.lng,
+      destination_lat: destCoords.lat,
+      destination_lng: destCoords.lng,
     });
 
     if (error) { alert('Gagal: ' + error.message); setLoading(false); }

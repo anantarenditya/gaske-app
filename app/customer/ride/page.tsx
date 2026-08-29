@@ -69,18 +69,16 @@ export default function RidePage() {
     return Math.max(1, Math.round(R * c));
   };
 
-  // --- FUNGSI MENGUBAH TITIK PETA MENJADI NAMA TEMPAT / JALAN ASLI ---
   const fetchAddressName = async (lat: number, lng: number) => {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
         headers: {
-          'Accept-Language': 'id' // Memaksa hasil pencarian dalam Bahasa Indonesia
+          'Accept-Language': 'id'
         }
       });
       const data = await res.json();
       if (data && data.address) {
         const addr = data.address;
-        // Mengambil nama spesifik (gedung, toko, jalan, atau kampung)
         const specific = addr.amenity || addr.building || addr.shop || addr.road || addr.village || addr.suburb || '';
         const region = addr.city || addr.county || addr.town || addr.state_district || '';
         
@@ -93,8 +91,6 @@ export default function RidePage() {
     } catch (e) {
       console.error("Gagal mengambil nama tempat:", e);
     }
-    
-    // Fallback jika jaringan/API bermasalah
     return `Jl. / Area Sekitar (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
   };
 
@@ -204,7 +200,6 @@ export default function RidePage() {
   };
 
   const handleMapClick = async (lat: number, lng: number) => {
-    // Ketika peta diklik, otomatis ambil nama tempatnya
     const addressName = await fetchAddressName(lat, lng);
     const newCoords = { lat, lng };
 
@@ -245,6 +240,12 @@ export default function RidePage() {
       estimated_price: price,
       final_price: price,
       payment_method: method === 'Tunai (Cash)' ? 'CASH' : 'DIGITAL_PAYMENT',
+      
+      // TAMBAHAN 4 BARIS KOORDINAT
+      pickup_lat: pickupCoords.lat,
+      pickup_lng: pickupCoords.lng,
+      dest_lat: destCoords.lat,
+      dest_lng: destCoords.lng,
     });
 
     if (error) {
