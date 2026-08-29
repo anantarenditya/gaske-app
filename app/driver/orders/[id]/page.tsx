@@ -120,7 +120,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* --- ALAMAT JEMPUT (Hanya tampilkan tombol maps jika status AKTIF) --- */}
+            {/* --- ALAMAT JEMPUT (Tombol Maps Titik A) --- */}
             <div className="flex gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 relative">
               <span className="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5 shadow-sm">A</span>
               <div className="flex-1 min-w-0">
@@ -138,7 +138,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* --- ALAMAT TUJUAN (Hanya tampilkan tombol maps jika status AKTIF) --- */}
+            {/* --- ALAMAT TUJUAN (Tombol Maps Titik B) --- */}
             <div className="flex gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 relative">
               <span className="w-6 h-6 rounded-full bg-rose-500 text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5 shadow-sm">B</span>
               <div className="flex-1 min-w-0">
@@ -193,7 +193,7 @@ export default function DriverOrderDetailPage({ params }: { params: Promise<{ id
             )}
           </div>
 
-          {/* Tombol Selesaikan Pesanan HANYA MUNCUL JIKA AKTIF */}
+          {/* Tombol Selesaikan Pesanan */}
           {isActive && (
             <button 
               onClick={handleCompleteOrder}
