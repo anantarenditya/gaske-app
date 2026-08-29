@@ -30,7 +30,6 @@ export default function CustomerProfilePage() {
       setEmail(user.email || '');
       setNewEmail(user.email || '');
 
-      // Sinkronisasi User ID ke OneSignal
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       window.OneSignalDeferred.push(async function(onesignal: any) {
         await onesignal.login(user.id);
@@ -107,7 +106,6 @@ export default function CustomerProfilePage() {
   const handleRequestNotification = async () => {
     setNotifLoading(true);
 
-    // Pengaman waktu (timeout) 10 detik untuk mengantisipasi jaringan lambat
     const timeout = setTimeout(() => {
       setNotifLoading(false);
       alert('Permintaan izin memakan waktu terlalu lama. Pastikan URL aplikasi Anda sudah terdaftar di Dashboard OneSignal.');
@@ -141,7 +139,7 @@ export default function CustomerProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-emerald-400 gap-2 font-sans">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-blue-400 gap-2 font-sans">
         <Loader2 className="w-6 h-6 animate-spin" /> Memuat Profil...
       </div>
     );
@@ -157,15 +155,15 @@ export default function CustomerProfilePage() {
             </button>
             <div>
               <h1 className="text-sm font-black text-white tracking-tight leading-none">Profil Saya</h1>
-              <p className="text-[10px] text-emerald-400 font-semibold mt-1">Kelola informasi akun & keamanan</p>
+              <p className="text-[10px] text-blue-400 font-semibold mt-1">Kelola informasi akun & keamanan</p>
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-5 space-y-4">
-        <div className="bg-gradient-to-br from-emerald-900/60 to-slate-800 p-6 rounded-3xl border border-emerald-500/20 shadow-xl space-y-1">
-          <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
+        <div className="bg-gradient-to-br from-blue-900/60 to-slate-800 p-6 rounded-3xl border border-blue-500/20 shadow-xl space-y-1">
+          <div className="flex items-center gap-1.5 text-blue-400 text-xs font-bold">
             <ShieldCheck className="w-4 h-4" /> Akun Terverifikasi
           </div>
           <h2 className="text-lg font-black text-white">{fullName || 'Pengguna GASKE'}</h2>
@@ -175,7 +173,7 @@ export default function CustomerProfilePage() {
         {/* SECTION NOTIFIKASI ONESIGNAL */}
         <div className="bg-slate-800/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
           <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pb-1 border-b border-slate-700/60 flex items-center gap-1.5">
-            <Bell className="w-3.5 h-3.5 text-emerald-400" /> Notifikasi Pesanan
+            <Bell className="w-3.5 h-3.5 text-blue-400" /> Notifikasi Pesanan
           </h3>
           <p className="text-xs text-slate-300 leading-relaxed">
             Aktifkan izin notifikasi agar Anda mendapatkan info status pesanan secara instan langsung di HP Anda.
@@ -184,7 +182,7 @@ export default function CustomerProfilePage() {
             type="button"
             onClick={handleRequestNotification}
             disabled={notifLoading}
-            className="w-full py-3.5 bg-slate-700 hover:bg-slate-600 text-emerald-400 font-black rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition border border-emerald-500/30"
+            className="w-full py-3.5 bg-slate-700 hover:bg-slate-600 text-blue-400 font-black rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition border border-blue-500/30"
           >
             {notifLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />} Aktifkan Notifikasi Perangkat
           </button>
@@ -197,40 +195,40 @@ export default function CustomerProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-emerald-400" /> Nama Lengkap
+              <User className="w-3.5 h-3.5 text-blue-400" /> Nama Lengkap
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Masukkan nama lengkap"
-              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Nomor Telepon / WhatsApp
+              <Phone className="w-3.5 h-3.5 text-blue-400" /> Nomor Telepon / WhatsApp
             </label>
             <input
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Contoh: 08123456789"
-              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-emerald-400" /> Alamat Email
+              <Mail className="w-3.5 h-3.5 text-blue-400" /> Alamat Email
             </label>
             <input
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="Masukkan email baru"
-              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
             />
           </div>
 
@@ -240,7 +238,7 @@ export default function CustomerProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" /> Password Baru (Opsional)
+              <Lock className="w-3.5 h-3.5 text-blue-400" /> Password Baru (Opsional)
             </label>
             <div className="relative flex items-center">
               <input
@@ -248,12 +246,12 @@ export default function CustomerProfilePage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Kosongkan jika tidak ingin mengubah password"
-                className="w-full p-3.5 pr-11 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full p-3.5 pr-11 bg-slate-900 border border-slate-700 rounded-2xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-slate-400 hover:text-emerald-400 transition"
+                className="absolute right-3.5 text-slate-400 hover:text-blue-400 transition"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -263,7 +261,7 @@ export default function CustomerProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 transition mt-4"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 transition mt-4"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan Perubahan
           </button>

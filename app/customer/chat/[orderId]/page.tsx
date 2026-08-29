@@ -21,7 +21,6 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fungsi untuk otomatis menggulir ke pesan terbaru
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -35,7 +34,6 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
       }
       setCurrentUserId(user.id);
 
-      // 1. Ambil riwayat chat sebelumnya berdasarkan order_id
       const { data, error } = await supabase
         .from('chats')
         .select('*')
@@ -50,7 +48,6 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
 
     initChat();
 
-    // 2. Berlangganan Supabase Realtime untuk pesan baru
     const channel = supabase
       .channel(`chat_${params.orderId}`)
       .on(
@@ -79,7 +76,7 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
     if (!newMessage.trim() || !currentUserId) return;
 
     const textToSend = newMessage;
-    setNewMessage(''); // Bersihkan input lebih awal agar responsif
+    setNewMessage('');
 
     const { error } = await supabase.from('chats').insert({
       order_id: params.orderId,
@@ -94,18 +91,16 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-slate-100 max-w-md mx-auto">
-      {/* Header Chat */}
       <header className="bg-slate-800/90 backdrop-blur-md p-4 border-b border-slate-700/60 flex items-center gap-3 sticky top-0 z-20">
         <button onClick={() => router.back()} className="p-2.5 bg-slate-700/50 hover:bg-slate-700 rounded-xl transition text-slate-300">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="font-bold text-xs uppercase tracking-wider text-white">Live Chat Pesanan</h1>
-          <p className="text-[10px] text-emerald-400 font-semibold">Terhubung dengan Driver</p>
+          <p className="text-[10px] text-blue-400 font-semibold">Terhubung dengan Driver</p>
         </div>
       </header>
 
-      {/* Daftar Pesan */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg) => {
           const isMe = msg.sender_id === currentUserId;
@@ -114,7 +109,7 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
               <div
                 className={`max-w-[75%] p-3 rounded-2xl text-xs font-medium shadow-sm ${
                   isMe
-                    ? 'bg-emerald-600 text-white rounded-br-none'
+                    ? 'bg-blue-600 text-white rounded-br-none'
                     : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700/60'
                 }`}
               >
@@ -129,18 +124,17 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Form Input Pesan */}
       <form onSubmit={sendMessage} className="p-3 bg-slate-800/90 border-t border-slate-700/60 flex gap-2 sticky bottom-0">
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Tulis pesan untuk driver..."
-          className="flex-1 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+          className="flex-1 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
         />
         <button
           type="submit"
-          className="bg-emerald-600 hover:bg-emerald-500 px-4 rounded-xl text-white transition flex items-center justify-center shadow-md"
+          className="bg-blue-600 hover:bg-blue-500 px-4 rounded-xl text-white transition flex items-center justify-center shadow-md"
         >
           <Send className="w-4 h-4" />
         </button>

@@ -9,16 +9,14 @@ import 'leaflet/dist/leaflet.css';
 import { Loader2 } from 'lucide-react';
 import Notification from '@/components/Notification';
 
-// Ikon khusus untuk motor Driver
 const motorIcon = L.divIcon({
-  html: `<div class="w-10 h-10 bg-white rounded-full border-2 border-emerald-500 shadow-xl flex items-center justify-center text-xl animate-pulse">🏍️</div>`,
+  html: `<div class="w-10 h-10 bg-white rounded-full border-2 border-blue-500 shadow-xl flex items-center justify-center text-xl animate-pulse">🏍️</div>`,
   className: 'custom-motor-pin',
   iconSize: [40, 40],
   iconAnchor: [20, 20],
 });
 
 export default function CustomerTracking({ params }: { params: Promise<{ id: string }> | { id: string } }) {
-  // Kompatibilitas aman untuk Next.js 15+ dan 16+
   const resolvedParams = 'then' in params ? use(params) : params;
   const orderId = resolvedParams.id;
 
@@ -27,7 +25,6 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
   const [driverLocation, setDriverLocation] = useState<{lat: number, lng: number} | null>(null);
   const [orderStatus, setOrderStatus] = useState<string>('');
 
-  // State untuk Notifikasi Melayang
   const [notif, setNotif] = useState({
     show: false,
     title: '',
@@ -43,7 +40,6 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
   };
 
   useEffect(() => {
-    // 1. Ambil data awal order (lokasi & status) saat halaman dibuka
     const fetchInitialData = async () => {
       const { data } = await supabase
         .from('orders')
@@ -62,7 +58,6 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
     };
     fetchInitialData();
 
-    // 2. Subscribe ke Supabase Realtime untuk memantau pergerakan & status
     const channel = supabase.channel(`tracking_order_${orderId}`)
       .on(
         'postgres_changes',
@@ -75,12 +70,10 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
         (payload) => {
           const newData = payload.new as any;
           
-          // Update koordinat GPS jika ada
           if (newData.driver_lat && newData.driver_lng) {
             setDriverLocation({ lat: newData.driver_lat, lng: newData.driver_lng });
           }
 
-          // Deteksi perubahan status pesanan untuk memunculkan notifikasi
           if (newData.status && newData.status !== orderStatus) {
             setOrderStatus(newData.status);
 
@@ -116,8 +109,6 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col relative">
-      
-      {/* KONTROL NOTIFIKASI MELAYANG */}
       <Notification 
         show={notif.show} 
         title={notif.title} 
@@ -128,7 +119,7 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
 
       <div className="bg-slate-800 p-5 shadow-lg z-10 border-b border-slate-700">
         <h1 className="text-white font-black text-base">Live Tracking Driver</h1>
-        <p className="text-emerald-400 text-xs font-medium mt-0.5">{getStatusText(orderStatus)}</p>
+        <p className="text-blue-400 text-xs font-medium mt-0.5">{getStatusText(orderStatus)}</p>
       </div>
 
       <div className="flex-1 w-full relative">
@@ -143,14 +134,13 @@ export default function CustomerTracking({ params }: { params: Promise<{ id: str
               attribution='&copy; <a href="https://carto.com/">CARTO</a>'
               url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             />
-            {/* Titik Motor Driver yang akan bergerak sendiri */}
             <Marker position={[driverLocation.lat, driverLocation.lng]} icon={motorIcon}>
               <Popup>Driver Anda di sini!</Popup>
             </Marker>
           </MapContainer>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-3 text-emerald-500" />
+            <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
             <p className="text-xs font-bold">Menunggu koneksi GPS dari Driver...</p>
           </div>
         )}

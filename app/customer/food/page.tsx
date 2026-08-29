@@ -192,7 +192,7 @@ export default function GaskeFoodPage() {
       pickupLng: storeCoords.lng,
       destinationLat: customerCoords.lat,
       destinationLng: customerCoords.lng,
-      customFare: deliveryFee, // <-- Mengirimkan harga ongkir pasti dari frontend
+      customFare: deliveryFee,
     });
 
     setLoadingCheckout(false);
@@ -228,13 +228,13 @@ export default function GaskeFoodPage() {
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/25">
+            <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mx-auto border border-blue-500/25">
               <QrCode className="w-7 h-7" />
             </div>
 
             <div>
               <h3 className="text-base font-black text-white">Scan QRIS untuk Membayar</h3>
-              <p className="text-xs text-emerald-400 font-bold mt-1">Estimasi Total Ongkir: {formatRupiah(deliveryFee)}</p>
+              <p className="text-xs text-blue-400 font-bold mt-1">Estimasi Total Ongkir: {formatRupiah(deliveryFee)}</p>
             </div>
 
             <div className="p-3 bg-white rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-inner">
@@ -246,7 +246,7 @@ export default function GaskeFoodPage() {
               type="button"
               onClick={() => executeCheckout('QRIS')}
               disabled={loadingCheckout}
-              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+              className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
             >
               {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Saya Sudah Bayar via QRIS'}
             </button>
@@ -271,24 +271,24 @@ export default function GaskeFoodPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari area, desa, atau jalan (Cth: Pasirian)..."
-            className="w-full p-3.5 pl-10 pr-20 bg-white rounded-2xl text-xs font-bold border border-slate-100 shadow-sm focus:ring-2 focus:ring-emerald-500"
+            className="w-full p-3.5 pl-10 pr-20 bg-white rounded-2xl text-xs font-bold border border-slate-100 shadow-sm focus:ring-2 focus:ring-blue-500"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
-          <button type="submit" className="absolute right-2 top-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition">
+          <button type="submit" className="absolute right-2 top-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition">
             Cari
           </button>
         </form>
 
         {loadingSearch && (
           <div className="flex items-center gap-2 py-2 justify-center text-xs text-slate-500">
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> Mencari lokasi...
+            <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Mencari lokasi...
           </div>
         )}
 
         {merchants.length > 0 && (
           <div className="bg-white p-3 rounded-3xl border border-slate-100 shadow-sm space-y-2 max-h-60 overflow-y-auto">
             <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider px-1 flex items-center gap-1">
-              <Utensils className="w-3.5 h-3.5 text-emerald-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
+              <Utensils className="w-3.5 h-3.5 text-blue-600" /> Hasil Pencarian ({merchants.length}) - Pilih Lokasi:
             </h3>
             <div className="space-y-1.5">
               {merchants.map((place) => (
@@ -296,7 +296,7 @@ export default function GaskeFoodPage() {
                   key={place.id}
                   type="button"
                   onClick={() => handleSelectMerchant(place)}
-                  className="w-full p-3 rounded-2xl border text-left bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition flex flex-col gap-0.5 shadow-sm"
+                  className="w-full p-3 rounded-2xl border text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition flex flex-col gap-0.5 shadow-sm"
                 >
                   <p className="font-bold text-xs text-slate-900">{place.name}</p>
                   <p className="text-[11px] text-slate-500 leading-tight">{place.address}</p>
@@ -308,14 +308,14 @@ export default function GaskeFoodPage() {
 
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-2">
           <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <Store className="w-3.5 h-3.5 text-emerald-600" /> Ketik Nama Warung / Restoran (Wajib):
+            <Store className="w-3.5 h-3.5 text-blue-600" /> Ketik Nama Warung / Restoran (Wajib):
           </label>
           <input
             type="text"
             value={manualStoreName}
             onChange={(e) => setManualStoreName(e.target.value)}
             placeholder="Cth: Warung Nasi Padang Pasirian..."
-            className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -325,10 +325,10 @@ export default function GaskeFoodPage() {
               type="button"
               onClick={() => setActivePinMode('STORE')}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm ${
-                activePinMode === 'STORE' ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-slate-100 text-slate-600'
+                activePinMode === 'STORE' ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-slate-100 text-slate-600'
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Toko/Warung (A)
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span> Atur Titik Toko/Warung (A)
             </button>
             <button
               type="button"
@@ -342,7 +342,7 @@ export default function GaskeFoodPage() {
           </div>
 
           <p className="text-[11px] text-center font-semibold text-slate-500">
-            {activePinMode === 'STORE' ? '📍 Ketuk peta untuk memindahkan Pin Hijau (Toko)' : '📍 Ketuk peta untuk memindahkan Pin Merah (Rumah Anda)'}
+            {activePinMode === 'STORE' ? '📍 Ketuk peta untuk memindahkan Pin Biru (Toko)' : '📍 Ketuk peta untuk memindahkan Pin Merah (Rumah Anda)'}
           </p>
 
           <DualPinMap
@@ -356,7 +356,7 @@ export default function GaskeFoodPage() {
           />
 
           <div className="flex justify-between items-center pt-1">
-            <span className="text-xs font-bold text-slate-600">Jarak Pengiriman: <strong className="text-emerald-600">{displayDistance} KM</strong></span>
+            <span className="text-xs font-bold text-slate-600">Jarak Pengiriman: <strong className="text-blue-600">{displayDistance} KM</strong></span>
             <button
               type="button"
               onClick={handleCustomerGPS}
@@ -376,20 +376,20 @@ export default function GaskeFoodPage() {
             value={customerAddress}
             onChange={(e) => setCustomerAddress(e.target.value)}
             placeholder="Contoh: Jl. Pemuda No. 10, Pagar Hitam"
-            className="w-full p-2.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full p-2.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Edit3 className="w-4 h-4 text-emerald-600" /> Ketik Pesanan Makanan Anda:
+            <Edit3 className="w-4 h-4 text-blue-600" /> Ketik Pesanan Makanan Anda:
           </label>
           <textarea
             value={customOrder}
             onChange={(e) => setCustomOrder(e.target.value)}
             placeholder="Cth: Nasi Goreng Pedas (2 porsi), Es Teh Manis (2 gelas)"
             rows={4}
-            className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-emerald-500 resize-none"
+            className="w-full p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-800 border-none focus:ring-2 focus:ring-blue-500 resize-none"
           />
         </div>
 
@@ -405,7 +405,7 @@ export default function GaskeFoodPage() {
                 key={m.label}
                 onClick={() => setPaymentMethod(m.label as any)}
                 className={`p-3 rounded-2xl border text-xs font-black transition flex items-center justify-center gap-2 ${
-                  paymentMethod === m.label ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-slate-50 text-slate-700 border-slate-100 hover:bg-slate-100'
+                  paymentMethod === m.label ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-50 text-slate-700 border-slate-100 hover:bg-slate-100'
                 }`}
               >
                 {m.icon} {m.label}
@@ -423,7 +423,7 @@ export default function GaskeFoodPage() {
               <span className="font-black text-slate-900 text-base">{formatRupiah(deliveryFee)}</span>
             </div>
 
-            <button onClick={handleCheckout} disabled={loadingCheckout} className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-200 transition flex items-center justify-center gap-2 text-xs">
+            <button onClick={handleCheckout} disabled={loadingCheckout} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl shadow-lg shadow-blue-200 transition flex items-center justify-center gap-2 text-xs">
               {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ShoppingCart className="w-4 h-4" /> Pesan Driver Sekarang ({paymentMethod})</>}
             </button>
           </div>

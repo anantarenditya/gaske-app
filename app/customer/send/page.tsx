@@ -47,7 +47,6 @@ export default function GaskeSendPage() {
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // Parsing alamat cerdas: Prioritaskan nama POI (Rumah Sakit, Sekolah, Gacoan, dll) jika ada di titik tersebut
   const parseOsmAddress = (data: any) => {
     if (!data || !data.address) return data?.display_name || '';
     const addr = data.address;
@@ -241,18 +240,18 @@ export default function GaskeSendPage() {
             <button onClick={() => setShowQrisModal(false)} className="absolute top-5 right-5 p-2 bg-slate-700/50 hover:bg-slate-700 rounded-full text-slate-300">
               <X className="w-4 h-4" />
             </button>
-            <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/25">
+            <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mx-auto border border-blue-500/25">
               <QrCode className="w-7 h-7" />
             </div>
             <div>
               <h3 className="text-base font-black text-white">Scan QRIS untuk Membayar</h3>
-              <p className="text-xs text-emerald-400 font-bold mt-1">Total Ongkir: {formatRupiah(fare)}</p>
+              <p className="text-xs text-blue-400 font-bold mt-1">Total Ongkir: {formatRupiah(fare)}</p>
             </div>
             <div className="p-3 bg-white rounded-2xl flex flex-col items-center justify-center space-y-2 shadow-inner">
               <img src="/images/qris.jpg" alt="QRIS GASKE.ID" className="w-52 h-52 object-contain rounded-xl" />
               <p className="text-[10px] text-slate-600 font-semibold">NMID: ID1026508198631 (GASKE.ID)</p>
             </div>
-            <button type="button" onClick={() => executeCheckout('QRIS')} disabled={loadingCheckout} className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+            <button type="button" onClick={() => executeCheckout('QRIS')} disabled={loadingCheckout} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
               {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Saya Sudah Bayar via QRIS'}
             </button>
           </div>
@@ -267,10 +266,10 @@ export default function GaskeSendPage() {
             </button>
             <div>
               <h1 className="text-sm font-black text-white tracking-tight leading-none">GASKE SEND</h1>
-              <p className="text-[10px] text-rose-400 font-semibold mt-1">Kirim Paket Cepat & Aman</p>
+              <p className="text-[10px] text-blue-400 font-semibold mt-1">Kirim Paket Cepat & Aman</p>
             </div>
           </div>
-          <button type="button" onClick={handleCurrentGPS} className="text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-2 rounded-xl flex items-center gap-1.5">
+          <button type="button" onClick={handleCurrentGPS} className="text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-3 py-2 rounded-xl flex items-center gap-1.5">
             <LocateFixed className="w-3.5 h-3.5" /> GPS Saya
           </button>
         </div>
@@ -283,17 +282,17 @@ export default function GaskeSendPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari lokasi jemput / tujuan..."
-            className="w-full p-3.5 pl-10 pr-20 bg-slate-800/90 border border-slate-700 rounded-2xl text-xs font-bold text-white shadow-sm focus:ring-2 focus:ring-rose-500"
+            className="w-full p-3.5 pl-10 pr-20 bg-slate-800/90 border border-slate-700 rounded-2xl text-xs font-bold text-white shadow-sm focus:ring-2 focus:ring-blue-500"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
-          <button type="submit" className="absolute right-2 top-2 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition">
+          <button type="submit" className="absolute right-2 top-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition">
             Cari
           </button>
         </form>
 
         {loadingSearch && (
           <div className="flex items-center gap-2 py-2 justify-center text-xs text-slate-400">
-            <Loader2 className="w-4 h-4 animate-spin text-rose-400" /> Mencari lokasi...
+            <Loader2 className="w-4 h-4 animate-spin text-blue-400" /> Mencari lokasi...
           </div>
         )}
 
@@ -306,7 +305,7 @@ export default function GaskeSendPage() {
                   key={place.id}
                   type="button"
                   onClick={() => handleSelectPlace(place)}
-                  className="w-full p-3 rounded-2xl border border-slate-700 text-left bg-slate-900/60 hover:bg-rose-500/10 hover:border-rose-500/50 transition flex flex-col gap-0.5 shadow-sm"
+                  className="w-full p-3 rounded-2xl border border-slate-700 text-left bg-slate-900/60 hover:bg-blue-500/10 hover:border-blue-500/50 transition flex flex-col gap-0.5 shadow-sm"
                 >
                   <p className="font-bold text-xs text-white">{place.name}</p>
                   <p className="text-[11px] text-slate-400 leading-tight">{place.address}</p>
@@ -322,10 +321,10 @@ export default function GaskeSendPage() {
               type="button"
               onClick={() => setActivePinMode('STORE')}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm ${
-                activePinMode === 'STORE' ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-slate-700/60 text-slate-300'
+                activePinMode === 'STORE' ? 'bg-blue-600 text-white ring-2 ring-blue-300' : 'bg-slate-700/60 text-slate-300'
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Atur Titik Jemput (A)
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span> Atur Titik Jemput (A)
             </button>
             <button
               type="button"
@@ -339,7 +338,7 @@ export default function GaskeSendPage() {
           </div>
 
           <p className="text-[11px] text-center font-semibold text-slate-400 flex items-center justify-center gap-1">
-            📍 {activePinMode === 'STORE' ? 'Ketuk peta untuk memindahkan Pin Hijau (Jemput)' : 'Ketuk peta untuk memindahkan Pin Merah (Tujuan)'}
+            📍 {activePinMode === 'STORE' ? 'Ketuk peta untuk memindahkan Pin Biru (Jemput)' : 'Ketuk peta untuk memindahkan Pin Merah (Tujuan)'}
           </p>
 
           <DualPinMap
@@ -353,7 +352,7 @@ export default function GaskeSendPage() {
           />
 
           <div className="flex justify-between items-center pt-1">
-            <span className="text-xs font-bold text-slate-300">Jarak: <strong className="text-rose-400">{distanceKm.toFixed(1).replace('.', ',')} KM</strong></span>
+            <span className="text-xs font-bold text-slate-300">Jarak: <strong className="text-blue-400">{distanceKm.toFixed(1).replace('.', ',')} KM</strong></span>
             <button
               type="button"
               onClick={handleCurrentGPS}
@@ -366,7 +365,7 @@ export default function GaskeSendPage() {
 
         <div className="bg-slate-800/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
           <div className="space-y-1 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
-            <label className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+            <label className="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> Lokasi Jemput Paket (A):
             </label>
             <p className="text-xs font-bold text-white truncate">{pickupAddress || 'Memuat alamat...'}</p>
@@ -382,21 +381,21 @@ export default function GaskeSendPage() {
         <div className="bg-slate-800/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700/60 shadow-xl space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><User className="w-3 h-3 text-rose-400" /> Nama Penerima</label>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><User className="w-3 h-3 text-blue-400" /> Nama Penerima</label>
               <input type="text" value={receiverName} onChange={(e) => setReceiverName(e.target.value)} placeholder="Nama" required
-                className="w-full p-3 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                className="w-full p-3 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Phone className="w-3 h-3 text-rose-400" /> No. HP Penerima</label>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Phone className="w-3 h-3 text-blue-400" /> No. HP Penerima</label>
               <input type="text" value={receiverPhone} onChange={(e) => setReceiverPhone(e.target.value)} placeholder="08xxx" required
-                className="w-full p-3 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                className="w-full p-3 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Edit3 className="w-3.5 h-3.5 text-rose-400" /> Detail / Jenis Paket (Wajib)</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Edit3 className="w-3.5 h-3.5 text-blue-400" /> Detail / Jenis Paket (Wajib)</label>
             <textarea value={packageDetail} onChange={(e) => setPackageDetail(e.target.value)} placeholder="Cth: Dokumen penting, Kotak kecil berisi pakaian..." rows={3} required
-              className="w-full p-3.5 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none" />
+              className="w-full p-3.5 bg-slate-900/90 rounded-2xl text-xs text-white border border-slate-700 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
           </div>
         </div>
 
@@ -412,7 +411,7 @@ export default function GaskeSendPage() {
                 key={m.label}
                 onClick={() => setPaymentMethod(m.label as any)}
                 className={`p-3 rounded-2xl border text-xs font-black transition flex items-center justify-center gap-2 ${
-                  paymentMethod === m.label ? 'bg-rose-600 text-white border-rose-500 shadow-md' : 'bg-slate-900/60 text-slate-300 border-slate-700'
+                  paymentMethod === m.label ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-slate-900/60 text-slate-300 border-slate-700'
                 }`}
               >
                 {m.icon} {m.label}
@@ -428,7 +427,7 @@ export default function GaskeSendPage() {
             <span className="text-slate-400 font-medium">Tarif Pengiriman:</span>
             <span className="font-black text-white text-base">{formatRupiah(fare)}</span>
           </div>
-          <button onClick={handleCheckout} disabled={loadingCheckout} className="w-full py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+          <button onClick={handleCheckout} disabled={loadingCheckout} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
             {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Package className="w-4 h-4" /> Pesan Gaske Send ({paymentMethod})</>}
           </button>
         </div>
