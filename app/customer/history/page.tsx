@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2 } from 'lucide-react';
+import { MessageCircle, MessageSquare, Bike, ArrowLeft, Loader2, Star } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
 export default function CustomerOrderDetailPage() {
@@ -14,6 +14,12 @@ export default function CustomerOrderDetailPage() {
   const [order, setOrder] = useState<any>(null);
   const [driverPhone, setDriverPhone] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  
+  // State untuk ulasan pelanggan (jika order sudah selesai)
+  const [ratingInput, setRatingInput] = useState<number>(5);
+  const [reviewInput, setReviewInput] = useState<string>('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   const supabase = createClient();
 
@@ -33,6 +39,12 @@ export default function CustomerOrderDetailPage() {
 
       if (orderData) {
         setOrder(orderData);
+        if (orderData.rating) {
+          setRatingInput(orderData.rating);
+        }
+        if (orderData.review) {
+          setReviewInput(orderData.review);
+        }
 
         if (orderData.driver_id) {
           const { data: driverProfile } = await supabase
@@ -52,6 +64,27 @@ export default function CustomerOrderDetailPage() {
 
     fetchOrderDetails();
   }, [orderId, supabase]);
+
+  const handleRatingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingReview(true);
+
+    const { error } = await supabase
+      .from('orders')
+      .update({
+        rating: ratingInput,
+        review: reviewInput,
+      })
+      .eq('id', orderId);
+
+    if (!error) {
+      setReviewSuccess(true);
+      setOrder((prev: any) => ({ ...prev, rating: ratingInput, review: reviewInput }));
+    } else {
+      alert('Gagal menyimpan ulasan. Silakan coba lagi.');
+    }
+    setSubmittingReview(false);
+  };
 
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return '';
@@ -153,6 +186,64 @@ export default function CustomerOrderDetailPage() {
               <span className="font-black text-emerald-600 text-base">{formatRupiah(order.final_price || order.estimated_price || 0)}</span>
             </div>
           </div>
+
+          {/* Bagian Penilaian & Ulasan (Hanya Muncul Jika Order COMPLETED) */}
+          {order.status === 'COMPLETED' && (
+            <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 space-y-3">
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Ulasan & Rating Driver</h3>
+              
+              {order.rating && !reviewSuccess ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star} 
+                        className={`w-4 h-4 ${star <= order.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`} 
+                      />
+                    ))}
+                    <span className="text-xs font-bold text-slate-700 ml-2">({order.rating}/5)</span>
+                  </div>
+                  {order.review && <p className="text-xs text-slate-600 italic">"{order.review}"</p>}
+                  <p className="text-[10px] text-emerald-600 font-medium">Ulasan telah dikirimkan.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleRatingSubmit} className="space-y-3">
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setRatingInput(star)}
+                        className="focus:outline-none"
+                      >
+                        <Star 
+                          className={`w-5 h-5 transition ${star <= ratingInput ? 'text-amber-400 fill-amber-400 scale-110' : 'text-slate-300'}`} 
+                        />
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-slate-700 ml-2">{ratingInput} Bintang</span>
+                  </div>
+
+                  <textarea
+                    value={reviewInput}
+                    onChange={(e) => setReviewInput(e.target.value)}
+                    placeholder="Tulis ulasan untuk driver (opsional)..."
+                    className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    rows={2}
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2"
+                  >
+                    {submittingReview && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {reviewSuccess ? 'Ulasan Berhasil Disimpan!' : 'Kirim Ulasan'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
 
           {/* Tombol Aksi Chat / WhatsApp */}
           <div className="space-y-3 pt-2">
