@@ -275,17 +275,17 @@ export default function DriverDashboard() {
         onClose={() => setNotif({ ...notif, show: false })} 
       />
 
-      <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
+      <header className="relative bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="max-w-md mx-auto relative z-10 space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-950/60 border border-white/30">
+              <div className="w-12 h-12 bg-gradient-to-tr from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-950/60 border border-white/30">
                 <span className="text-white font-black text-2xl tracking-tighter">G</span>
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-[0.18em] text-white font-sans">GASKE</h1>
-                <p className="text-[11px] text-emerald-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
+                <p className="text-[11px] text-blue-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
               </div>
             </div>
 
@@ -318,7 +318,7 @@ export default function DriverDashboard() {
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/80 shadow-2xl space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
+              <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl">
                 <Wallet className="w-5 h-5" />
               </div>
               <div>
@@ -333,7 +333,7 @@ export default function DriverDashboard() {
                 )}
               </div>
             </div>
-            <Link href="/driver/orders/history" className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1">
+            <Link href="/driver/orders/history" className="text-xs text-blue-400 font-bold hover:underline flex items-center gap-1">
               Detail <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -342,9 +342,9 @@ export default function DriverDashboard() {
             <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/40">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Pendapatan Hari Ini</p>
               {isLoadingStats ? (
-                 <Loader2 className="w-4 h-4 animate-spin text-emerald-500/50 mt-1" />
+                 <Loader2 className="w-4 h-4 animate-spin text-blue-500/50 mt-1" />
               ) : (
-                 <p className="text-sm font-black text-emerald-400 mt-1">{formatRupiah(todayEarnings)}</p>
+                 <p className="text-sm font-black text-blue-400 mt-1">{formatRupiah(todayEarnings)}</p>
               )}
             </div>
             <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/40">
@@ -360,19 +360,19 @@ export default function DriverDashboard() {
 
         {/* Profil Driver */}
         <div className="bg-slate-800/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700/60 shadow-xl flex items-center gap-3.5">
-          <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner">
+          <div className="w-12 h-12 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center font-black text-lg shadow-inner">
             D
           </div>
           <div>
             <h3 className="font-black text-sm text-white tracking-wide">DRIVER GASKE</h3>
-            <p className="text-[11px] text-emerald-400 font-semibold mt-0.5">Mitra Pengemudi Resmi</p>
+            <p className="text-[11px] text-blue-400 font-semibold mt-0.5">Mitra Pengemudi Resmi</p>
           </div>
         </div>
 
         {/* Status Toggle Card */}
         <div className="bg-slate-800/90 backdrop-blur-xl p-4.5 rounded-3xl border border-slate-700/60 shadow-xl flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className={`w-3.5 h-3.5 rounded-full ${isOnline ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse' : 'bg-slate-500'}`}></div>
+            <div className={`w-3.5 h-3.5 rounded-full ${isOnline ? 'bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse' : 'bg-slate-500'}`}></div>
             <div>
               <h3 className="font-black text-xs text-white tracking-wide">{isOnline ? 'SIAP NARIK (ONLINE)' : 'STATUS: OFFLINE'}</h3>
               <p className="text-[10px] text-slate-400 mt-0.5">{isOnline ? 'Siap menerima orderan masuk' : 'Anda sedang istirahat'}</p>
@@ -382,7 +382,7 @@ export default function DriverDashboard() {
           <button
             onClick={() => handleToggleOnline(!isOnline)}
             className={`px-4.5 py-2.5 rounded-2xl text-xs font-black transition flex items-center gap-1.5 shadow-lg ${
-              isOnline ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40'
+              isOnline ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40'
             }`}
           >
             <Power className="w-3.5 h-3.5" /> {isOnline ? 'Matikan' : 'Mulai Narik'}
@@ -391,9 +391,9 @@ export default function DriverDashboard() {
 
         {/* Card Orderan Aktif */}
         {activeOrder ? (
-          <div className="bg-slate-800/95 backdrop-blur-xl p-6 rounded-3xl border-2 border-emerald-500 shadow-2xl space-y-4">
+          <div className="bg-slate-800/95 backdrop-blur-xl p-6 rounded-3xl border-2 border-blue-500 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-3.5 border-b border-slate-700/60">
-              <span className="text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3.5 py-1 rounded-full tracking-wider">
+              <span className="text-[10px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3.5 py-1 rounded-full tracking-wider">
                 {activeOrder.service} Berjalan
               </span>
               <span className="font-black text-white text-lg">{formatRupiah(activeOrder.final_price)}</span>
@@ -403,7 +403,7 @@ export default function DriverDashboard() {
               
               {/* ALAMAT JEMPUT (TITIK A) */}
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl shrink-0 mt-0.5">
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl shrink-0 mt-0.5">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div className="w-full min-w-0">
@@ -414,7 +414,7 @@ export default function DriverDashboard() {
                   {activeOrder.pickup_lat && activeOrder.pickup_lng && (
                     <button 
                       onClick={() => openGoogleMaps(activeOrder.pickup_lat as number, activeOrder.pickup_lng as number)}
-                      className="w-full flex items-center justify-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 py-2.5 rounded-xl font-bold text-[11px] transition"
+                      className="w-full flex items-center justify-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 py-2.5 rounded-xl font-bold text-[11px] transition"
                     >
                       <Map className="w-3.5 h-3.5" /> Arahkan ke Titik Jemput (A)
                     </button>
@@ -453,7 +453,7 @@ export default function DriverDashboard() {
                 <span className={`text-xs font-black px-2.5 py-1 rounded-xl ${
                   activeOrder.payment_method === 'Tunai (Cash)' 
                     ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' 
-                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
                 }`}>
                   {activeOrder.payment_method || 'Tunai (Cash)'} 
                 </span>
@@ -500,7 +500,7 @@ export default function DriverDashboard() {
                 <button
                   onClick={() => handleUpdateStatus('COMPLETED')}
                   disabled={loading}
-                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                  className="w-full py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Selesaikan Orderan & Terima Pendapatan</>}
                 </button>
@@ -521,20 +521,20 @@ export default function DriverDashboard() {
               availableOrders.map((order) => (
                 <div key={order.id} className="bg-slate-800/90 backdrop-blur-xl p-5 rounded-3xl border border-slate-700/60 shadow-xl space-y-3.5">
                   <div className="flex justify-between items-center border-b border-slate-700/60 pb-3">
-                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg uppercase">{order.service}</span>
+                    <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-lg uppercase">{order.service}</span>
                     <span className="text-base font-black text-white">{formatRupiah(order.final_price)}</span>
                   </div>
 
                   <div className="space-y-1 text-xs text-slate-300">
                     <p className="truncate"><strong>Jemput:</strong> {order.pickup_address}</p>
                     <p className="truncate"><strong>Tujuan:</strong> {order.destination_address.split('| Rincian:')[0]}</p>
-                    <p className="text-[11px] text-emerald-400 font-bold pt-1">Metode: {order.payment_method || 'Tunai (Cash)'}</p>
+                    <p className="text-[11px] text-blue-400 font-bold pt-1">Metode: {order.payment_method || 'Tunai (Cash)'}</p>
                   </div>
 
                   <button
                     onClick={() => handleAcceptOrder(order.id)}
                     disabled={loading}
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-xs transition shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-xs transition shadow-lg flex items-center justify-center gap-2"
                   >
                     Terima Orderan Ini Sekarang
                   </button>

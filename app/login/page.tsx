@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link href="/" className="text-3xl font-black text-emerald-600 tracking-tight">
+        <Link href="/" className="text-3xl font-black text-blue-600 tracking-tight">
           GASKE
         </Link>
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
@@ -58,7 +58,7 @@ export default function LoginPage() {
                   type="email"
                   required
                   placeholder="nama@email.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -71,15 +71,15 @@ export default function LoginPage() {
                 <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-3" />
                 <input
                   name="password"
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-emerald-600 transition"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 transition"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -89,7 +89,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -112,14 +112,14 @@ export default function LoginPage() {
               rel="noopener noreferrer"
               className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition border border-slate-200 flex items-center justify-center gap-1.5"
             >
-              <HelpCircle className="w-4 h-4 text-emerald-600" />
+              <HelpCircle className="w-4 h-4 text-blue-600" />
               Hubungi Admin (Hapus Akun Lama)
             </a>
           </div>
 
           <div className="mt-5 text-center text-xs text-slate-500">
             Belum punya akun?{' '}
-            <Link href="/register" className="font-bold text-emerald-600 hover:underline">
+            <Link href="/register" className="font-bold text-blue-600 hover:underline">
               Daftar sekarang
             </Link>
           </div>

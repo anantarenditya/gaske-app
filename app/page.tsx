@@ -7,7 +7,7 @@ export default function LandingPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-500 selection:text-white">
       
       {/* NAVBAR */}
       <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all">
@@ -16,17 +16,17 @@ export default function LandingPage() {
             
             {/* LOGO KOTAK HURUF G */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-md border border-emerald-300/30">
+              <div className="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md border border-blue-300/30">
                 <span className="text-white font-black text-xl tracking-tighter">G</span>
               </div>
-              <span className="font-black text-2xl tracking-[0.1em] text-emerald-700">GASKE</span>
+              <span className="font-black text-2xl tracking-[0.1em] text-blue-700">GASKE</span>
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4">
-              <button onClick={() => router.push('/login')} className="text-sm font-bold text-slate-600 hover:text-emerald-600 transition cursor-pointer">
+              <button onClick={() => router.push('/login')} className="text-sm font-bold text-slate-600 hover:text-blue-600 transition cursor-pointer">
                 Masuk
               </button>
-              <button onClick={() => router.push('/register')} className="text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full shadow-md shadow-emerald-200 transition cursor-pointer">
+              <button onClick={() => router.push('/register')} className="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-md shadow-blue-200 transition cursor-pointer">
                 Daftar
               </button>
             </div>
@@ -37,18 +37,18 @@ export default function LandingPage() {
       <main>
         {/* HERO SECTION */}
         <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 max-w-7xl mx-auto text-center flex flex-col items-center">
-          <span className="bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase mb-6 shadow-sm border border-emerald-200">
+          <span className="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase mb-6 shadow-sm border border-blue-200">
             Transportasi & Pengiriman Lokal
           </span>
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl">
-            Mau ke mana? <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">GASKE.</span>
+            Mau ke mana? <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">GASKE.</span>
           </h1>
           <p className="mt-6 text-base md:text-xl text-slate-500 max-w-2xl font-medium">
             Satu aplikasi untuk semua kebutuhan harian Anda. Transportasi cepat, pesan antar makanan, hingga belanja kebutuhan instan.
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto px-4">
-            <button onClick={() => router.push('/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-emerald-200 transition group cursor-pointer">
+            <button onClick={() => router.push('/register')} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-blue-200 transition group cursor-pointer">
               Pesan Sekarang <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
             </button>
           </div>
@@ -63,15 +63,15 @@ export default function LandingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-100 transition duration-300 cursor-pointer">
-                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-100 transition duration-300 cursor-pointer">
+                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <Bike className="w-7 h-7" />
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-2">GASKE RIDE</h3>
                 <p className="text-sm text-slate-500 leading-relaxed font-medium mb-6">
                   Layanan antar jemput menggunakan sepeda motor. Cepat, anti macet, dan pasti sampai tujuan.
                 </p>
-                <span className="text-sm font-bold text-emerald-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                <span className="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Pesan Ride <ArrowRight className="w-4 h-4" />
                 </span>
               </div>
@@ -102,15 +102,15 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-100 transition duration-300 cursor-pointer">
-                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+              <div onClick={() => router.push('/register')} className="group p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-2xl hover:shadow-indigo-100 transition duration-300 cursor-pointer">
+                <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                   <ShoppingBag className="w-7 h-7" />
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-2">GASKE MART</h3>
                 <p className="text-sm text-slate-500 leading-relaxed font-medium mb-6">
                   Titip belanja kebutuhan minimarket instan. Driver kami akan membelikan pesanan Anda.
                 </p>
-                <span className="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                <span className="text-sm font-bold text-indigo-600 flex items-center gap-1 group-hover:gap-2 transition-all">
                   Mulai Belanja <ArrowRight className="w-4 h-4" />
                 </span>
               </div>
@@ -136,8 +136,8 @@ export default function LandingPage() {
                 { step: '06', title: 'Selesai', icon: <Star className="w-5 h-5" /> },
               ].map((item, index) => (
                 <div key={index} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
-                  <div className="text-emerald-500 mb-3">{item.icon}</div>
-                  <span className="text-xs font-black text-emerald-600 mb-1">{item.step}</span>
+                  <div className="text-blue-500 mb-3">{item.icon}</div>
+                  <span className="text-xs font-black text-blue-600 mb-1">{item.step}</span>
                   <h4 className="text-sm font-bold text-slate-800">{item.title}</h4>
                 </div>
               ))}
@@ -160,7 +160,7 @@ export default function LandingPage() {
                 { icon: <MapPin />, title: 'Live Tracking GPS', desc: 'Pantau posisi driver secara realtime tepat di atas peta.' },
               ].map((item, idx) => (
                 <div key={idx} className="flex flex-col items-center text-center p-6">
-                  <div className="w-16 h-16 bg-slate-50 text-emerald-600 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                  <div className="w-16 h-16 bg-slate-50 text-blue-600 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                     {item.icon}
                   </div>
                   <h4 className="text-lg font-black text-slate-900 mb-2">{item.title}</h4>
@@ -179,7 +179,7 @@ export default function LandingPage() {
             
             {/* LOGO KOTAK HURUF G (FOOTER) */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
+              <div className="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
                 <span className="text-white font-black text-xl tracking-tighter">G</span>
               </div>
               <span className="font-black text-2xl tracking-[0.1em] text-white">GASKE</span>
@@ -193,19 +193,19 @@ export default function LandingPage() {
           <div>
             <h4 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Layanan</h4>
             <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE RIDE</span></li>
-              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE SEND</span></li>
-              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE FOOD</span></li>
-              <li><span onClick={() => router.push('/login')} className="hover:text-emerald-400 transition cursor-pointer">GASKE MART</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-blue-400 transition cursor-pointer">GASKE RIDE</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-blue-400 transition cursor-pointer">GASKE SEND</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-blue-400 transition cursor-pointer">GASKE FOOD</span></li>
+              <li><span onClick={() => router.push('/login')} className="hover:text-blue-400 transition cursor-pointer">GASKE MART</span></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">Bantuan & Legal</h4>
             <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><span className="hover:text-emerald-400 transition cursor-pointer">Pusat Bantuan</span></li>
-              <li><span className="hover:text-emerald-400 transition cursor-pointer">Syarat & Ketentuan</span></li>
-              <li><span className="hover:text-emerald-400 transition cursor-pointer">Kebijakan Privasi</span></li>
+              <li><span className="hover:text-blue-400 transition cursor-pointer">Pusat Bantuan</span></li>
+              <li><span className="hover:text-blue-400 transition cursor-pointer">Syarat & Ketentuan</span></li>
+              <li><span className="hover:text-blue-400 transition cursor-pointer">Kebijakan Privasi</span></li>
             </ul>
           </div>
 
