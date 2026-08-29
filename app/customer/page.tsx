@@ -17,6 +17,7 @@ interface Order {
   final_price: number;
   rating?: number;
   driver_id?: string;
+  order_number?: string;
 }
 
 export default function CustomerDashboard() {
@@ -287,22 +288,36 @@ export default function CustomerDashboard() {
                 <p className="text-slate-300 line-clamp-1"><strong className="text-slate-400">Tujuan:</strong> {activeOrder.destination_address.split('| Rincian:')[0]}</p>
               </div>
 
-              {activeOrder.status !== 'SEARCHING_DRIVER' && (
-                driverPhone ? (
-                  <a
-                    href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Hubungi Driver via WhatsApp
-                  </a>
-                ) : (
-                  <div className="w-full py-3 bg-slate-800 text-slate-400 border border-slate-700 rounded-2xl text-center text-xs font-bold">
-                    Nomor HP Driver Belum Terdaftar di Profil
-                  </div>
-                )
-              )}
+              {activeOrder.status !== 'SEARCHING_DRIVER' && driverPhone ? (
+                <a
+                  href={`https://wa.me/${driverPhone}?text=Halo%20Driver%20GASKE,%20saya%20pemesan%20layanan%20${activeOrder.service}.`} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs"
+                >
+                  <MessageCircle className="w-4 h-4" /> Hubungi Driver via WhatsApp
+                </a>
+              ) : null}
+
+              {/* Tombol Bantuan WhatsApp Admin & Driver */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/60">
+                <a
+                  href={`https://wa.me/6285803004649?text=${encodeURIComponent(`Halo Admin GASKE, saya ingin menanyakan status pesanan saya dengan Resi: ${activeOrder.order_number || activeOrder.id?.slice(0, 8)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-slate-700/60 hover:bg-slate-700 text-emerald-400 border border-slate-600/60 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                >
+                  💬 WhatsApp Admin
+                </a>
+                <a
+                  href={`https://wa.me/6287792198678?text=${encodeURIComponent(`Halo Driver GASKE, saya konfirmasi untuk pesanan saya (Resi: ${activeOrder.order_number || activeOrder.id?.slice(0, 8)})`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 font-bold py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                >
+                  📞 WhatsApp Driver
+                </a>
+              </div>
             </div>
           </div>
         ) : null}
