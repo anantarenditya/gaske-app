@@ -78,7 +78,6 @@ export default function GaskeFoodPage() {
     searchPlacesReal(searchQuery);
   };
 
-  // Hanya memindahkan koordinat peta & pin (Titik A), tidak merubah kotak nama warung
   const handleSelectMerchant = (place: MerchantPlace) => {
     const newCoords = { lat: place.lat, lng: place.lng };
     setStoreCoords(newCoords);
@@ -193,6 +192,7 @@ export default function GaskeFoodPage() {
       pickupLng: storeCoords.lng,
       destinationLat: customerCoords.lat,
       destinationLng: customerCoords.lng,
+      customFare: deliveryFee, // <-- Mengirimkan harga ongkir pasti dari frontend
     });
 
     setLoadingCheckout(false);

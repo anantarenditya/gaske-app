@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ServiceType } from '@/types';
 
 export interface CreateOrderInput {
-  service: ServiceType; // Harus berjenis ServiceType (misal 'RIDE' / 'GASKE_RIDE')
+  service: ServiceType; 
   pickupAddress: string;
   destinationAddress: string;
   distanceKm: number;
@@ -13,6 +13,7 @@ export interface CreateOrderInput {
   pickupLng?: number;
   destinationLat?: number;
   destinationLng?: number;
+  customFare?: number; // <-- Parameter baru untuk menerima harga pasti dari frontend
 }
 
 export async function calculateFareAction(service: ServiceType, distanceKm: number) {
@@ -59,21 +60,22 @@ export async function createOrderAction(input: CreateOrderInput) {
     id: user.id,
   }, { onConflict: 'id' });
 
-  // 1. AMBIL NOMOR HP TERBARU DARI PROFIL KUSTOMER
   const { data: userProfile } = await supabase
     .from('profiles')
     .select('phone_number')
     .eq('id', user.id)
     .maybeSingle();
 
-  const { fare } = await calculateFareAction(input.service, input.distanceKm);
+  // JIKA CUSTOMFARE DISEDIAKAN, GUNAKAN ITU. JIKA TIDAK, HITUNG DARI DATABASE.
+  const fare = input.customFare !== undefined 
+    ? input.customFare 
+    : (await calculateFareAction(input.service, input.distanceKm)).fare;
 
-  // 2. SIMPAN NOMOR HP LANGSUNG KE DALAM TABEL ORDERS
   const { data: order, error } = await supabase
     .from('orders')
     .insert({
       customer_id: user.id,
-      customer_phone: userProfile?.phone_number || user.user_metadata?.phone_number || '', // <-- KUNCI PENYELESAIAN MASALAH WA
+      customer_phone: userProfile?.phone_number || user.user_metadata?.phone_number || '', 
       service: input.service,
       status: 'SEARCHING_DRIVER',
       pickup_address: input.pickupAddress,
