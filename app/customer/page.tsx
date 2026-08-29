@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import Notification from '@/components/Notification';
-import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User, MessageSquare } from 'lucide-react';
+import { Bike, Package, Utensils, ShoppingBag, Loader2, MapPin, Clock, MessageCircle, LogOut, Navigation2, ShieldCheck, History, Star, Send, User, MessageSquare, RefreshCw } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils/format';
 
 interface Order {
@@ -25,6 +25,7 @@ export default function CustomerDashboard() {
   const supabase = createClient();
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [driverPhone, setDriverPhone] = useState<string>('');
 
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -49,100 +50,103 @@ export default function CustomerDashboard() {
     }, 4000);
   };
 
+  const fetchOrderData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    const { data: activeData } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('customer_id', user.id)
+      .in('status', ['SEARCHING_DRIVER', 'ACCEPTED', 'DRIVER_ARRIVED', 'IN_TRIP'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeData) {
+      setActiveOrder(activeData as Order);
+      setShowRatingModal(false);
+
+      if (activeData.driver_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('phone_number')
+          .eq('id', activeData.driver_id)
+          .single();
+
+        if (profileData?.phone_number) {
+          let phoneNum = profileData.phone_number.trim();
+          if (phoneNum.startsWith('0')) {
+            phoneNum = '62' + phoneNum.slice(1);
+          }
+          setDriverPhone(phoneNum);
+        } else {
+          setDriverPhone('');
+        }
+      }
+
+      setLoading(false);
+      return;
+    }
+
+    setActiveOrder(null);
+    setDriverPhone('');
+
+    const { data: unratedData } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('customer_id', user.id)
+      .eq('status', 'COMPLETED')
+      .is('rating', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (unratedData) {
+      setCompletedOrderId(unratedData.id);
+      setCompletedServiceName(unratedData.service);
+      setShowRatingModal(true);
+    } else {
+      setShowRatingModal(false);
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
     let isMounted = true;
     let pollInterval: NodeJS.Timeout;
 
-    async function fetchOrderData() {
+    async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         if (isMounted) router.push('/login');
         return;
       }
-
-      const loadData = async () => {
-        const { data: activeData } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('customer_id', user.id)
-          .in('status', ['SEARCHING_DRIVER', 'ACCEPTED', 'DRIVER_ARRIVED', 'IN_TRIP'])
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (activeData) {
-          if (isMounted) {
-            // Deteksi perubahan status untuk memunculkan notifikasi
-            if (activeOrder && activeOrder.status !== activeData.status) {
-              if (activeData.status === 'ACCEPTED') {
-                showNotification('Driver Ditemukan!', 'Driver telah menerima pesanan Anda.', 'success');
-              } else if (activeData.status === 'DRIVER_ARRIVED') {
-                showNotification('Driver Tiba', 'Driver sudah berada di lokasi jemput.', 'info');
-              } else if (activeData.status === 'IN_TRIP') {
-                showNotification('Dalam Perjalanan', 'Perjalanan menuju tujuan dimulai.', 'success');
-              }
-            }
-
-            setActiveOrder(activeData as Order);
-            setShowRatingModal(false);
-
-            if (activeData.driver_id) {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('phone_number')
-                .eq('id', activeData.driver_id)
-                .single();
-
-              if (profileData?.phone_number) {
-                let phoneNum = profileData.phone_number.trim();
-                if (phoneNum.startsWith('0')) {
-                  phoneNum = '62' + phoneNum.slice(1);
-                }
-                setDriverPhone(phoneNum);
-              } else {
-                setDriverPhone('');
-              }
-            }
-
-            setLoading(false);
-          }
-          return;
-        }
-
-        setActiveOrder(null);
-        setDriverPhone('');
-
-        const { data: unratedData } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('customer_id', user.id)
-          .eq('status', 'COMPLETED')
-          .is('rating', null)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (unratedData && isMounted) {
-          setCompletedOrderId(unratedData.id);
-          setCompletedServiceName(unratedData.service);
-          setShowRatingModal(true);
-        } else {
-          setShowRatingModal(false);
-        }
-
-        if (isMounted) setLoading(false);
-      };
-
-      await loadData();
-      pollInterval = setInterval(loadData, 3000);
+      if (isMounted) {
+        await fetchOrderData();
+        pollInterval = setInterval(fetchOrderData, 3000);
+      }
     }
 
-    fetchOrderData();
+    init();
     return () => {
       isMounted = false;
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [supabase, router, activeOrder]);
+  }, [supabase, router]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchOrderData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      showNotification('Berhasil', 'Data halaman berhasil diperbarui.', 'success');
+    }, 500);
+  };
 
   const handleSubmitRating = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,28 +242,42 @@ export default function CustomerDashboard() {
         </div>
       )}
 
+      {/* HEADER BARU: TOMBOL HISTORY, PROFILE, LOGOUT DI BAWAH TULISAN GASKE DAN ADA TOMBOL REFRESH */}
       <header className="relative bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 px-5 pt-8 pb-16 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="max-w-md mx-auto flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-950/60 border border-white/30">
-              <span className="text-white font-black text-2xl tracking-tighter">G</span>
+        <div className="max-w-md mx-auto relative z-10 space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-950/60 border border-white/30">
+                <span className="text-white font-black text-2xl tracking-tighter">G</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-[0.18em] text-white font-sans">GASKE</h1>
+                <p className="text-[11px] text-emerald-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-[0.18em] text-white font-sans">GASKE</h1>
-              <p className="text-[11px] text-emerald-100 font-medium tracking-[0.08em] lowercase mt-0.5 opacity-90">apa aja, tinggal gaske!</p>
-            </div>
+
+            {/* Tombol Refresh di pojok kanan atas */}
+            <button 
+              onClick={handleManualRefresh} 
+              disabled={isRefreshing}
+              title="Refresh Halaman" 
+              className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white flex items-center gap-1.5 text-xs font-bold"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href="/customer/history" title="Riwayat Pesanan" className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
-              <History className="w-5 h-5" />
+          {/* Tombol History, Profil, dan Log Out dipindah ke bawah tulisan GASKE */}
+          <div className="flex items-center gap-2 pt-2 border-t border-white/15">
+            <Link href="/customer/history" className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-xl transition shadow-md text-white flex items-center justify-center gap-2 text-xs font-bold">
+              <History className="w-4 h-4" /> Riwayat
             </Link>
-            <Link href="/customer/profile" title="Profil Saya" className="p-2.5 bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/15 rounded-2xl transition shadow-lg text-white">
-              <User className="w-5 h-5" />
+            <Link href="/customer/profile" className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 rounded-xl transition shadow-md text-white flex items-center justify-center gap-2 text-xs font-bold">
+              <User className="w-4 h-4" /> Profil
             </Link>
-            <button onClick={handleLogout} title="Keluar" className="p-2.5 bg-rose-500/20 hover:bg-rose-500/35 backdrop-blur-md border border-rose-500/30 rounded-2xl transition shadow-lg text-rose-300">
-              <LogOut className="w-5 h-5" />
+            <button onClick={handleLogout} className="py-2 px-3 bg-rose-500/20 hover:bg-rose-500/35 backdrop-blur-md border border-rose-500/30 rounded-xl transition shadow-md text-rose-200 flex items-center justify-center gap-1 text-xs font-bold">
+              <LogOut className="w-4 h-4" /> Keluar
             </button>
           </div>
         </div>
