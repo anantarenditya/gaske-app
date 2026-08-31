@@ -13,34 +13,51 @@ export interface CreateOrderInput {
   pickupLng?: number;
   destinationLat?: number;
   destinationLng?: number;
-  customFare?: number;
+  customFare?: number; 
 }
 
 export async function calculateFareAction(service: ServiceType, distanceKm: number) {
   const supabase = await createClient();
 
-  // Jika layanan adalah SEND, arahkan agar menggunakan aturan harga yang sama dengan RIDE
-  const targetService = service === 'SEND' ? 'RIDE' : service;
-
   const { data: rule, error } = await supabase
     .from('pricing_rules')
     .select('*')
-    .eq('service', targetService)
+    .eq('service', service)
     .maybeSingle();
 
-  if (error || !rule) {
-    const baseFare = 5000;
-    const pricePerKm = 2500;
+  if (rule && !error) {
+    const baseFare = Number(rule.base_fare);
+    const pricePerKm = Number(rule.price_per_km);
+    const minimumFare = Number(rule.minimum_fare);
     const calculated = baseFare + distanceKm * pricePerKm;
-    return { fare: Math.max(calculated, 8000) };
+    return { fare: Math.max(calculated, minimumFare) };
   }
 
-  const baseFare = Number(rule.base_fare);
-  const pricePerKm = Number(rule.price_per_km);
-  const minimumFare = Number(rule.minimum_fare);
+  // ============================================================
+  // RUMUS UTAMA (Kini Seragam untuk Ride, Send, Food, & Mart)
+  // ============================================================
+  const currentHourWIB = (new Date().getUTCHours() + 7) % 24;
 
-  const calculatedFare = baseFare + distanceKm * pricePerKm;
-  const finalFare = Math.max(calculatedFare, minimumFare);
+  let basePrice = 7000;
+  let perKmPrice = 2000;
+
+  if (currentHourWIB >= 5 && currentHourWIB < 17) {
+    basePrice = 7000;
+    perKmPrice = 2000;
+  } else if (currentHourWIB >= 17 && currentHourWIB < 21) {
+    basePrice = 8000;
+    perKmPrice = 2500;
+  } else {
+    basePrice = 10000;
+    perKmPrice = 3000;
+  }
+
+  let calculatedFare = basePrice;
+  if (distanceKm > 4) {
+    calculatedFare = basePrice + ((distanceKm - 4) * perKmPrice);
+  }
+
+  const finalFare = Math.ceil(calculatedFare / 500) * 500;
 
   return { fare: finalFare };
 }
@@ -51,12 +68,14 @@ export async function createOrderAction(input: CreateOrderInput) {
 
   if (!user) return { error: 'Anda harus login terlebih dahulu.' };
 
+  // Sinkronisasi profil pelanggan
   await supabase.from('profiles').upsert({
     id: user.id,
-    email: user.email,
+    email: user.email || '',
     full_name: user.user_metadata?.full_name || 'Pelanggan',
     phone_number: user.user_metadata?.phone_number || '',
     role: 'customer',
+    updated_at: new Date().toISOString(),
   }, { onConflict: 'id' });
 
   await supabase.from('customer_profiles').upsert({
@@ -69,9 +88,8 @@ export async function createOrderAction(input: CreateOrderInput) {
     .eq('id', user.id)
     .maybeSingle();
 
-  const fare = input.customFare !== undefined 
-    ? input.customFare 
-    : (await calculateFareAction(input.service, input.distanceKm)).fare;
+  // Hitung ulang tarif di server untuk keamanan
+  const { fare } = await calculateFareAction(input.service, input.distanceKm);
 
   const { data: order, error } = await supabase
     .from('orders')
