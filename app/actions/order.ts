@@ -17,25 +17,9 @@ export interface CreateOrderInput {
 }
 
 export async function calculateFareAction(service: ServiceType, distanceKm: number) {
-  const supabase = await createClient();
+  // Pengecekan tabel pricing_rules DIHAPUS agar tidak bentrok dengan harga lama.
+  // Semua layanan kini WAJIB menggunakan rumus dinamis di bawah ini.
 
-  const { data: rule, error } = await supabase
-    .from('pricing_rules')
-    .select('*')
-    .eq('service', service)
-    .maybeSingle();
-
-  if (rule && !error) {
-    const baseFare = Number(rule.base_fare);
-    const pricePerKm = Number(rule.price_per_km);
-    const minimumFare = Number(rule.minimum_fare);
-    const calculated = baseFare + distanceKm * pricePerKm;
-    return { fare: Math.max(calculated, minimumFare) };
-  }
-
-  // ============================================================
-  // RUMUS UTAMA (Kini Seragam untuk Ride, Send, Food, & Mart)
-  // ============================================================
   const currentHourWIB = (new Date().getUTCHours() + 7) % 24;
 
   let basePrice = 7000;
