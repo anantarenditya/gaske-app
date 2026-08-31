@@ -126,9 +126,9 @@ export default function GaskeSendPage() {
   }, [pickupCoords, destinationCoords]);
 
   useEffect(() => {
-    async function updateFareAndAddress() {
+    const delayTimer = setTimeout(async () => {
       const dist = Math.max(1, calculateDistance(pickupCoords, destinationCoords));
-      const res = await calculateFareAction('SEND', dist);
+      const res = await calculateFareAction('SEND', dist); 
       setFare(res.fare);
 
       try {
@@ -136,7 +136,11 @@ export default function GaskeSendPage() {
           headers: { 'Accept-Language': 'id' }
         });
         const dataPickup = await resPickup.json();
-        if (dataPickup) setPickupAddress(parseOsmAddress(dataPickup));
+        if (dataPickup && !dataPickup.error) {
+          setPickupAddress(parseOsmAddress(dataPickup));
+        } else {
+          setPickupAddress(`Lokasi Jemput (${pickupCoords.lat.toFixed(4)}, ${pickupCoords.lng.toFixed(4)})`);
+        }
       } catch {
         setPickupAddress(`Lokasi Jemput (${pickupCoords.lat.toFixed(4)}, ${pickupCoords.lng.toFixed(4)})`);
       }
@@ -146,12 +150,17 @@ export default function GaskeSendPage() {
           headers: { 'Accept-Language': 'id' }
         });
         const dataDest = await resDest.json();
-        if (dataDest) setDestinationAddress(parseOsmAddress(dataDest));
+        if (dataDest && !dataDest.error) {
+          setDestinationAddress(parseOsmAddress(dataDest));
+        } else {
+          setDestinationAddress(`Lokasi Tujuan (${destinationCoords.lat.toFixed(4)}, ${destinationCoords.lng.toFixed(4)})`);
+        }
       } catch {
         setDestinationAddress(`Lokasi Tujuan (${destinationCoords.lat.toFixed(4)}, ${destinationCoords.lng.toFixed(4)})`);
       }
-    }
-    updateFareAndAddress();
+    }, 1000);
+
+    return () => clearTimeout(delayTimer);
   }, [pickupCoords, destinationCoords]);
 
   useEffect(() => {

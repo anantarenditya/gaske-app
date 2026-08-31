@@ -124,18 +124,24 @@ export default function GaskeFoodPage() {
   }, [storeCoords, customerCoords]);
 
   useEffect(() => {
-    const fetchNewAddress = async () => {
+    const delayTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${customerCoords.lat}&lon=${customerCoords.lng}&zoom=18&addressdetails=1`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${customerCoords.lat}&lon=${customerCoords.lng}&zoom=18&addressdetails=1`, {
+          headers: { 'Accept-Language': 'id' }
+        });
         const data = await res.json();
-        if (data && data.display_name) {
+        
+        if (data && !data.error && data.display_name) {
           setCustomerAddress(data.display_name);
+        } else {
+          setCustomerAddress(`Lokasi (${customerCoords.lat.toFixed(4)}, ${customerCoords.lng.toFixed(4)})`);
         }
       } catch {
         setCustomerAddress(`Lokasi (${customerCoords.lat.toFixed(4)}, ${customerCoords.lng.toFixed(4)})`);
       }
-    };
-    fetchNewAddress();
+    }, 1000);
+
+    return () => clearTimeout(delayTimer);
   }, [customerCoords]);
 
   useEffect(() => {

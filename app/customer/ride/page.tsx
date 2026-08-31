@@ -123,7 +123,7 @@ export default function GaskeRidePage() {
   }, [pickupCoords, destinationCoords]);
 
   useEffect(() => {
-    async function updateFareAndAddress() {
+    const delayTimer = setTimeout(async () => {
       const dist = Math.max(1, calculateDistance(pickupCoords, destinationCoords));
       const res = await calculateFareAction('RIDE', dist);
       setFare(res.fare);
@@ -133,7 +133,11 @@ export default function GaskeRidePage() {
           headers: { 'Accept-Language': 'id' }
         });
         const dataPickup = await resPickup.json();
-        if (dataPickup) setPickupAddress(parseOsmAddress(dataPickup));
+        if (dataPickup && !dataPickup.error) {
+          setPickupAddress(parseOsmAddress(dataPickup));
+        } else {
+          setPickupAddress(`Lokasi (${pickupCoords.lat.toFixed(4)}, ${pickupCoords.lng.toFixed(4)})`);
+        }
       } catch {
         setPickupAddress(`Lokasi (${pickupCoords.lat.toFixed(4)}, ${pickupCoords.lng.toFixed(4)})`);
       }
@@ -143,12 +147,17 @@ export default function GaskeRidePage() {
           headers: { 'Accept-Language': 'id' }
         });
         const dataDest = await resDest.json();
-        if (dataDest) setDestinationAddress(parseOsmAddress(dataDest));
+        if (dataDest && !dataDest.error) {
+          setDestinationAddress(parseOsmAddress(dataDest));
+        } else {
+          setDestinationAddress(`Lokasi (${destinationCoords.lat.toFixed(4)}, ${destinationCoords.lng.toFixed(4)})`);
+        }
       } catch {
         setDestinationAddress(`Lokasi (${destinationCoords.lat.toFixed(4)}, ${destinationCoords.lng.toFixed(4)})`);
       }
-    }
-    updateFareAndAddress();
+    }, 1000);
+
+    return () => clearTimeout(delayTimer);
   }, [pickupCoords, destinationCoords]);
 
   useEffect(() => {
